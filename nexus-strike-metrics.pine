@@ -50,16 +50,16 @@ showOi     = input.bool(true, "Column: OI",    group = "Columns")
 showGex    = input.bool(true, "Column: GEX",   group = "Columns")
 labelSizeI = input.string("Normal", "Label size", options = ["Tiny", "Small", "Normal", "Large"], group = "Style",
      tooltip = "One size for every row. Emphasis comes from color (key levels get colored boxes), not size.")
-sizeNum    = input.int(0, "Size override (buttons)", minval = 0, maxval = 5, group = "Style",
+sizeNum    = input.int(3, "Size override (buttons)", minval = 0, maxval = 5, group = "Style",
      tooltip = "0 = use the Label size dropdown above. 1-5 = Tiny / Small / Normal / Large / Huge. " +
      "The bigger/smaller buttons under the floating Bridge button drive this field.")
 heavyFont  = input.bool(true, "Heavier font (monospace)", group = "Style",
      tooltip = "Pine labels can't be bold (no font-weight exists), so this swaps in the monospace font, which " +
      "renders chunkier/heavier than the default — the closest thing to bold available. Also lines the columns up. Turn off for the default font.")
-labelOff   = input.int(36, "Label offset (bars right)", minval = 0, maxval = 120, group = "Style",
+labelOff   = input.int(44, "Label offset (bars right)", minval = 0, maxval = 120, group = "Style",
      tooltip = "Push the first bubble this many bars right of the last candle. " +
      "36 = 3 hours out on a 5-min chart. Very large values can fall off behind the price scale.")
-bubbleGap  = input.int(8, "Bubble spacing (bars)", minval = 2, maxval = 40, group = "Style",
+bubbleGap  = input.int(15, "Bubble spacing (bars)", minval = 2, maxval = 40, group = "Style",
      tooltip = "Gap between the score / OI / GEX columns. Labels are fixed pixel width but " +
      "spaced in bars, so nudge this if they overlap or spread out at your usual zoom.")
 labelPosI  = input.string("Above", "Label float", options = ["Above", "Below", "Up-right", "Down-right"], group = "Style",
