@@ -1,0 +1,343 @@
+//@version=5
+// =============================================================================
+// Nexus Strike Metrics for Nexus ‚Üí TradingView Bridge 2.5.0
+// -----------------------------------------------------------------------------
+// Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
+// curated walls from the encoded export string; it can't take anything else.
+// This one takes a plain list of prices, so the Bridge extension can drop in the
+// significant per-strike levels the export leaves out (and you can type them by
+// hand to test).
+//
+// Run BOTH indicators on the chart ‚Äî this one only adds lines, it replaces
+// nothing.
+//
+// INPUT FORMAT   price:type:score:oi:gex:line:color   comma separated, spaces ignored
+//   price  required   e.g. 690  or  690.5
+//   type   optional   R = resistance   S = support   default R (kept for the feed)
+//   score  optional   bubble 1 ‚Äî the NUMBER is tinted with Nexus's own score color
+//                      (field 7, blue->orange->red); low scores fade smoothly, no cliff.
+//   oi     optional   OI Neto, bubble 2 ‚Äî text green if +, red if -
+//   gex    optional   GEX,     bubble 3 ‚Äî text green if +, red if -
+//   line   optional   "1" = draw the dotted line, "0" = bubbles only (default 1).
+//                      Bridge sets 1 only on significant strikes the export omits.
+//   color  optional   Nexus's own score-number color "r-g-b-a"; paints the score
+//                      TEXT (and the line). Absent -> falls back to a score gradient.
+//
+//   690:R:38:+2.1K:+313.2K:1:244-63-94-19, 685:R:72:-24.2K:-435.2M:0
+//   690, 694, 700                     (bare prices also work ‚Äî just a line)
+// =============================================================================
+
+indicator("Nexus Strike Metrics", overlay = true, max_lines_count = 200, max_labels_count = 300)
+
+// ---- inputs -----------------------------------------------------------------
+// display.none keeps this (very long) value OUT of the chart legend / status line.
+// Without it TradingView echoes the whole strike-metrics string across the top of the
+// chart. It stays fully readable/writable in the Settings dialog, so the extension is
+// unaffected.
+src = input.string("", "Strike metrics", display = display.none, tooltip =
+     "price:type:score:oi:gex:line, comma separated\n" +
+     "e.g.  690:R:38:+2.1K:+313.2K:1\n" +
+     "score / oi / gex each get their own bubble; colors are automatic")
+
+enabled    = input.bool(true, "Show key levels", group = "Style",
+     tooltip = "Master on/off for the WHOLE indicator (lines + bubbles). The eye toggle under the " +
+     "floating Bridge button flips this checkbox.")
+showLabels = input.bool(true,  "Show labels",  group = "Style")
+// Per-column switches. Hiding a column also REMOVES ITS SLOT ‚Äî the remaining
+// columns shift left to close the gap, rather than leaving a hole where it was.
+showScore  = input.bool(true, "Column: Score", group = "Columns")
+showOi     = input.bool(true, "Column: OI",    group = "Columns")
+showGex    = input.bool(true, "Column: GEX",   group = "Columns")
+labelSizeI = input.string("Normal", "Label size", options = ["Tiny", "Small", "Normal", "Large"], group = "Style",
+     tooltip = "One size for every row. Emphasis comes from color (key levels get colored boxes), not size.")
+sizeNum    = input.int(0, "Size override (buttons)", minval = 0, maxval = 5, group = "Style",
+     tooltip = "0 = use the Label size dropdown above. 1-5 = Tiny / Small / Normal / Large / Huge. " +
+     "The bigger/smaller buttons under the floating Bridge button drive this field.")
+heavyFont  = input.bool(true, "Heavier font (monospace)", group = "Style",
+     tooltip = "Pine labels can't be bold (no font-weight exists), so this swaps in the monospace font, which " +
+     "renders chunkier/heavier than the default ‚Äî the closest thing to bold available. Also lines the columns up. Turn off for the default font.")
+labelOff   = input.int(36, "Label offset (bars right)", minval = 0, maxval = 120, group = "Style",
+     tooltip = "Push the first bubble this many bars right of the last candle. " +
+     "36 = 3 hours out on a 5-min chart. Very large values can fall off behind the price scale.")
+bubbleGap  = input.int(8, "Bubble spacing (bars)", minval = 2, maxval = 40, group = "Style",
+     tooltip = "Gap between the score / OI / GEX columns. Labels are fixed pixel width but " +
+     "spaced in bars, so nudge this if they overlap or spread out at your usual zoom.")
+labelPosI  = input.string("Above", "Label float", options = ["Above", "Below", "Up-right", "Down-right"], group = "Style",
+     tooltip = "Where the bubble sits vs its level. 'Above' puts it over the level with the pointer pointing DOWN to it.")
+lineWidth  = input.int(2, "Line width", minval = 1, maxval = 4, group = "Style")
+lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
+spanFull   = input.bool(true, "Span full width", group = "Style",
+     tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
+
+// ---- colors -----------------------------------------------------------------
+colScoreT = input.color(color.black, "Bubble text", group = "Colors",
+     tooltip = "Text color for all three bubbles. Black reads cleanly on both the gray (minor) and the colored (key-level) boxes.")
+colGray   = input.color(#868b93, "Bubble background",  group = "Colors")
+// OI/GEX get a CONTINUOUS lightness ramp within their sign, not just an opacity fade.
+// Opacity alone is a weak visual channel, which is why small values still read "dark";
+// pale -> saturated -> deep carries magnitude far better and matches the score ramp.
+colPosLo  = input.color(#cdefc4, "OI/GEX +  low  (pale green)",  group = "Colors")
+colPos    = input.color(#45b681, "OI/GEX +  mid  (green)",       group = "Colors")
+colPosHi  = input.color(#297a46, "OI/GEX +  high (deep green)", group = "Colors")
+colNegLo  = input.color(#ffe0de, "OI/GEX -  low  (pale pink)",  group = "Colors")
+colNeg    = input.color(#ef5350, "OI/GEX -  mid  (red)",        group = "Colors")
+colNegHi  = input.color(#7f1d1d, "OI/GEX -  high (deep maroon)",group = "Colors")
+// ONE continuous warm ramp for the score ‚Äî light yellow -> yellow -> light orange ->
+// orange -> dark orange -> red -> burgundy. Three hard bands + a blue-gray floor read as
+// unrelated colors ("purple to yellow to red, doesn't feel like one scale"); a single
+// hue ramp reads as one axis, so the eye ranks levels instantly.
+colSc1 = input.color(#f0d96b, "Score 1 ‚Äî light yellow", group = "Colors")
+colSc2 = input.color(#ffc51f, "Score 2 ‚Äî yellow",       group = "Colors")
+colSc3 = input.color(#ffbe3d, "Score 3 ‚Äî light orange", group = "Colors")
+colSc4 = input.color(#ff9416, "Score 4 ‚Äî orange",       group = "Colors")
+colSc5 = input.color(#ef6c00, "Score 5 ‚Äî dark orange",  group = "Colors")
+colSc6 = input.color(#d32f2f, "Score 6 ‚Äî red",          group = "Colors")
+colSc7 = input.color(#7f1d1d, "Score 7 ‚Äî burgundy",     group = "Colors")
+topScore  = input.int(70, "Score for darkest box", minval = 5, group = "Colors",
+     tooltip = "Score that reaches the DARKEST/most-solid box. Set this near your biggest wall scores " +
+     "(~55-65) so the gradient keeps deepening across the whole range instead of flattening out early ‚Äî " +
+     "that's what makes the really-important levels stand out as the darkest.")
+darkT     = input.int(0, "Darkest box (transp %)", minval = 0, maxval = 40, group = "Colors",
+     tooltip = "Transparency of the box at the top score. Low = near-solid, so top levels read as solid chips " +
+     "against the translucent crowd. This solidity is the standout for the important levels.")
+scoreMax  = input.int(55, "Score scale (reddest)", minval = 1, group = "Colors",
+     tooltip = "Fallback only: for manual entries with no Nexus color, the score box runs " +
+     "yellow up to red at this score. Bridge levels use Nexus's own score color.")
+insigFade = input.int(78, "Insignificant fade (%)", minval = 40, maxval = 95, group = "Colors",
+     tooltip = "Faintness of the box at the BOTTOM of the scale (heat 0). Higher = fainter small values. " +
+     "Lower this if the whole column reads too washed out.")
+midT      = input.int(42, "Mid-heat transp (%)", minval = 20, maxval = 80, group = "Colors",
+     tooltip = "OI/GEX opacity at the HALFWAY point (heat 50). Below 50 stays muted (never the glaring " +
+     "solid color); above 50 ramps toward solid. Raise to keep more values muted.")
+heatCurve = input.float(1.0, "Heat curve (1 = linear)", minval = 0.3, maxval = 1.0, step = 0.05, group = "Colors",
+     tooltip = "Bends the magnitude scale so MID-SIZE values still read bold. Everything is scaled to the " +
+     "session's single biggest OI/GEX, so with a linear curve (1.0) one monster wall makes everything else " +
+     "faint. 0.5 = square root: a value at 25% of the max reads at 50% intensity. Lower = punchier.")
+showTitle = input.bool(true, "Show header row", group = "Colors")
+hdrGapPct = input.float(6.5, "Header gap (% of range)", minval = 1.0, maxval = 25.0, step = 0.5, group = "Colors",
+     tooltip = "Vertical distance from the top level up to the header row, as a % of the drawn price range. " +
+     "Lower = headers sit closer to the levels.")
+hdrShift  = input.float(2.0, "Header nudge (bars)", minval = -10, maxval = 10, step = 0.5, group = "Colors",
+     tooltip = "Headers use a straight-DOWN tail, which centres the chip on its anchor, while the data " +
+     "bubbles anchor a corner. This nudges the header right so it sits over its column. Pine can't measure " +
+     "label width, so tune this by eye if your label size or font changes.")
+colHdrBg  = input.color(#525762, "Header bar", group = "Colors")
+colHdrTx  = input.color(#aae28d, "Header text", group = "Colors")
+
+// ---- helpers ----------------------------------------------------------------
+styleOf(s) =>
+    s == "Solid" ? line.style_solid : s == "Dashed" ? line.style_dashed : line.style_dotted
+
+sizeOf(s) =>
+    s == "Tiny" ? size.tiny : s == "Small" ? size.small : s == "Normal" ? size.normal : s == "Large" ? size.large : size.huge
+
+// Map the 1-5 numeric size override (driven by the FAB buttons) to a size name.
+numToName(n) =>
+    n == 1 ? "Tiny" : n == 2 ? "Small" : n == 3 ? "Normal" : n == 4 ? "Large" : "Huge"
+
+// Effective size name: the override (buttons) when set, else the dropdown.
+effSz = sizeNum > 0 ? numToName(sizeNum) : labelSizeI
+
+// TradingView names label styles after the POINTER direction; the box floats the
+// OPPOSITE way. So a box that floats DOWN-RIGHT needs the pointer pointing
+// UP-LEFT (style_label_upper_left), etc. This maps plain box-direction names to
+// the right style so the input reads the way the eye sees it.
+labelStyleOf(s) =>
+    s == "Above"     ? label.style_label_lower_left :
+     s == "Below"    ? label.style_label_up :
+     s == "Up-right" ? label.style_label_lower_right :
+     label.style_label_upper_left
+
+// Signed value + its 0-1 heat -> a continuous colour on that sign's ramp.
+// Sign picks the family (green vs red); heat drives pale -> saturated -> deep.
+// Once a box gets dark (deep green / maroon / burgundy), black text disappears ‚Äî flip the
+// label to white past that point so the top levels stay readable.
+txtOn(isDark) =>
+    isDark ? color.white : colScoreT
+
+signGrad(v, h) =>
+    pos = not str.startswith(v, "-")
+    cLo = pos ? colPosLo : colNegLo
+    cMid = pos ? colPos : colNeg
+    cHi = pos ? colPosHi : colNegHi
+    hc = math.max(0.0, math.min(1.0, h))
+    hc < 0.5 ? color.from_gradient(hc, 0.0, 0.5, cLo, cMid) : color.from_gradient(hc, 0.5, 1.0, cMid, cHi)
+
+// Score -> one continuous warm colour, interpolated across the 7 stops. No hard bands and
+// no gray floor: a low score is a very light yellow (and mostly transparent), so it recedes
+// without ever leaving the scale.
+scoreCol(s) =>
+    s < 15 ? color.from_gradient(s, 0, 15, colSc1, colSc2) :
+     s < 30 ? color.from_gradient(s, 15, 30, colSc2, colSc3) :
+     s < 45 ? color.from_gradient(s, 30, 45, colSc3, colSc4) :
+     s < 60 ? color.from_gradient(s, 45, 60, colSc4, colSc5) :
+     s < 75 ? color.from_gradient(s, 60, 75, colSc5, colSc6) :
+     color.from_gradient(s, 75, 90, colSc6, colSc7)
+
+// Heat (0-1) -> box transparency. Two even ramps that meet at the halfway point:
+// heat 0->0.5 fades insigFade -> midT (faint -> muted), heat 0.5->1 goes midT -> darkT
+// (muted -> solid). So the glaring solid color is RESERVED for heat >= 50; nothing
+// below half-max ever hits full saturation, and the mid reads as a genuine mid.
+opacityOf(hRaw) =>
+    // Bend the raw magnitude first: everything is scaled to the session's single biggest
+    // OI/GEX, so linearly one monster wall leaves every other box faint. heatCurve 0.5
+    // (sqrt) lifts the mid-range ‚Äî 25% of max reads as 50% intensity ‚Äî so a genuinely
+    // large-but-not-largest level still looks strong.
+    h = math.pow(math.max(0.0, math.min(1.0, hRaw)), heatCurve)
+    h < 0.5 ? insigFade - (h / 0.5) * (insigFade - midT) : midT - ((h - 0.5) / 0.5) * (midT - darkT)
+
+// NOTE: Pine labels have NO font-weight ‚Äî there is no bold. Unicode bold glyphs
+// render as TOFU/garbage in TradingView's label font (tried it). The heaviest look
+// available is monospace (heavyFont) + high-contrast BLACK text on a COLORED box ‚Äî
+// that contrast is what reads as "bold". Every bubble follows a score gradient
+// (gray -> own color) that darkens across the FULL score range to near-solid, so the
+// highest-score levels stand out as the darkest instead of the gradient flattening.
+
+// Drawings persist across bars, so keep handles and clear them before redrawing ‚Äî
+// otherwise every new bar stacks another copy until the object cap is hit.
+var line[]  lns = array.new_line()
+var label[] lbs = array.new_label()
+
+// Draw one bubble (own text + background color) and remember it for cleanup.
+// Empty text draws nothing, so a missing column just leaves a gap.
+drawBubble(int off, float price, string txt, color txtCol, color bgCol, string szName) =>
+    if str.length(txt) > 0
+        lb = label.new(bar_index + off, price, txt,
+             style     = labelStyleOf(labelPosI),
+             color     = bgCol,
+             textcolor = txtCol,
+             size      = sizeOf(szName),
+             text_font_family = heavyFont ? font.family_monospace : font.family_default)
+        array.push(lbs, lb)
+
+// Headers: solid dark chip, light UPPERCASE text, and a STRAIGHT-DOWN tail
+// (style_label_down) instead of the data bubbles' diagonal one. That style centres the
+// chip on its anchor while the data anchors a corner, so `hdrShift` nudges it back over
+// the column ‚Äî Pine can't measure label width, so it's tuned by eye.
+drawHeader(float off, float price, string txt) =>
+    lb = label.new(bar_index + math.round(off), price, txt,
+         style     = label.style_label_down,
+         color     = colHdrBg,
+         textcolor = colHdrTx,
+         size      = sizeOf(effSz),
+         text_font_family = heavyFont ? font.family_monospace : font.family_default)
+    array.push(lbs, lb)
+
+// PERF: the body used to re-run on EVERY realtime tick, deleting and recreating ~70
+// labels each time ‚Äî that is what triggered TradingView's "Heavy script / close to the
+// 20s runtime limit" warning. Nothing here depends on price, only on the Levels string
+// and the bar we anchor to, so redraw ONLY when one of those actually changes.
+var string lastSrc = na
+var int    lastBar = na
+if barstate.islast and (src != lastSrc or bar_index != lastBar)
+    lastSrc := src
+    lastBar := bar_index
+    // NOTE: guard the loops. In Pine `for i = 0 to -1` counts DOWN and executes,
+    // so an unguarded loop over an empty array is a real bug, not a no-op.
+    if array.size(lns) > 0
+        for i = 0 to array.size(lns) - 1
+            line.delete(array.get(lns, i))
+        array.clear(lns)
+    if array.size(lbs) > 0
+        for i = 0 to array.size(lbs) - 1
+            label.delete(array.get(lbs, i))
+        array.clear(lbs)
+
+    float maxP = na // track the top level so the title row can sit above it
+    float minP = na
+
+    // Pine has no str.trim, so strip every space up front.
+    clean = str.replace_all(src, " ", "")
+    if str.length(clean) > 0
+        items = str.split(clean, ",")
+        if array.size(items) > 0
+            for i = 0 to array.size(items) - 1
+                item = array.get(items, i)
+                if str.length(item) > 0
+                    f     = str.split(item, ":")
+                    price = str.tonumber(array.get(f, 0))
+                    score = array.size(f) > 2 ? array.get(f, 2) : ""
+                    oi    = array.size(f) > 3 ? array.get(f, 3) : ""
+                    gex   = array.size(f) > 4 ? array.get(f, 4) : ""
+                    // 6th field gates the line: "0" = bubbles only, anything else
+                    // (incl. absent, for manual/legacy entry) = draw the line.
+                    lineOn = array.size(f) > 5 ? (array.get(f, 5) != "0") : true
+                    // 7th field = Nexus's own score-number color "r-g-b-a"; used
+                    // directly (opaque) as the score TEXT color and the line color.
+                    float nr = na
+                    float ng = na
+                    float nb = na
+                    if array.size(f) > 6 and str.length(array.get(f, 6)) > 0
+                        c = str.split(array.get(f, 6), "-")
+                        if array.size(c) >= 3
+                            nr := str.tonumber(array.get(c, 0))
+                            ng := str.tonumber(array.get(c, 1))
+                            nb := str.tonumber(array.get(c, 2))
+                    hasNex = not na(nr) and not na(ng) and not na(nb)
+                    if not na(price)
+                        maxP := na(maxP) or price > maxP ? price : maxP
+                        minP := na(minP) or price < minP ? price : minP
+
+                        // The GRADIENT (score-driven) colors every bubble: each box
+                        // crossfades gray -> its own color (score = Nexus color, OI/GEX =
+                        // green/red by sign) AND darkens with the score across the FULL range
+                        // (0 -> topScore), so it never flattens out ‚Äî the highest-score
+                        // (really-important) levels end up the darkest / most-solid and stand
+                        // out from the translucent crowd on their own. Text is black.
+                        scoreNum = str.length(score) > 0 ? str.tonumber(score) : na
+                        popFrac  = na(scoreNum) ? 0.0 : math.max(0.0, math.min(1.0, scoreNum / topScore))
+                        // OI/GEX box intensity comes from their OWN column-relative heat
+                        // (fields 7/8, 0-100 = this value vs the biggest OI/GEX on the board
+                        // right now), so a monster GEX pops even on a low-score strike. Absent
+                        // (older data) -> fall back to the score-driven popFrac.
+                        oHeat    = array.size(f) > 7 and str.length(array.get(f, 7)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 7)) / 100.0)) : popFrac
+                        gHeat    = array.size(f) > 8 and str.length(array.get(f, 8)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 8)) / 100.0)) : popFrac
+                                                // Score box HUE in three HARD bands by score value (Aidan): 30-49 YELLOW,
+                        // 50-66 ORANGE, 66+ RED. No blue/pink anywhere ‚Äî we ignore Nexus's own
+                        // score color for the box. OI/GEX keep their sign color (green +, red -).
+                        // All three scale OPACITY by magnitude via opacityOf (muted low, solid high).
+                        // Below 30 = noise -> GRAY (no hue at all). That's what makes the
+                        // column glanceable: only levels that matter carry color.
+                        scoreHue = na(scoreNum) ? colGray : scoreCol(scoreNum)
+                        scoreBg  = color.new(scoreHue, opacityOf(popFrac))
+                        oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
+                        gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
+                        // Line matches the score band color (no Nexus blue/pink on the lines either).
+                        lineCol  = color.new(scoreHue, 8)
+
+                        // Only the flagged (significant, non-exported) levels keep a
+                        // dotted line; every strike still gets its bubbles below.
+                        if lineOn and enabled
+                            ln = line.new(bar_index - 1, price, bar_index, price,
+                                 extend = spanFull ? extend.both : extend.none,
+                                 color = lineCol, width = lineWidth, style = styleOf(lineStyleI))
+                            array.push(lns, ln)
+                        if showLabels and enabled
+                            // Three fixed columns so they line up under the title row:
+                            // score, OI Neto, GEX. A missing value just leaves its gap.
+                            // One size for all; low-score numbers just fade a little.
+                            sTxt = str.length(score) > 0 ? score : str.tostring(price, format.mintick)
+                            // `slot` advances only for columns actually drawn, so turning
+                            // one off closes the gap instead of leaving a blank lane.
+                            slot = 0
+                            if showScore
+                                drawBubble(labelOff + slot * bubbleGap, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz)
+                                slot += 1
+                            if showOi
+                                drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz)
+                                slot += 1
+                            if showGex
+                                drawBubble(labelOff + slot * bubbleGap, price, gex, txtOn(gHeat >= 0.62), gexBg, effSz)
+
+    // Header row above the top level, labelling each column.
+    if showTitle and enabled and not na(maxP)
+        titleP = maxP + math.max((maxP - minP) * hdrGapPct / 100.0, maxP * 0.0008)
+        hSlot = 0
+        if showScore
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "SCORE")
+            hSlot += 1
+        if showOi
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "OI")
+            hSlot += 1
+        if showGex
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "GEX")
