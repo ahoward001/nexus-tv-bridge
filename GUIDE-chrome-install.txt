@@ -1,0 +1,160 @@
+Nexus → TradingView Bridge — Install (Chrome: Windows, macOS or Linux)
+================================================================
+Version 4.1.3
+
+WHAT IT DOES
+------------
+One click reads the current export code from your Nexus dashboard (for the
+ticker your chart is on), opens the "Nexus Futures" TradingView indicator,
+pastes it into the "Niveles" field, and clicks OK to apply. It also pops a
+small panel with that ticker's Positioning and Tension, color-coded, plus how
+fresh the data is. Takes about a second. There are NO selectors to set up.
+
+BEFORE YOU START — you need
+---------------------------
+1. Google Chrome.
+2. A Nexus account, logged in at dashboard.nexusfutures.net.
+3. A TradingView tab open on a chart that has the "Nexus Futures" indicator
+   added (any version - V3, V4.1, etc.).
+4. OPTIONAL but recommended: the "Nexus Strike Metrics" indicator, which draws
+   the per-strike Score / OI / GEX columns. It ships with this folder as
+   nexus-strike-metrics.pine - see SETUP-STRIKE-METRICS.md for the 2-minute
+   setup (by hand, or a ready-made prompt for an AI assistant).
+5. OPTIONAL: to refresh your chart from your PHONE with no computer, see
+   SETUP-PHONE.md - two iOS Shortcuts, nothing stored anywhere.
+
+EVERY CLICK REFRESHES EVERYTHING
+--------------------------------
+One click reloads Nexus and rewrites BOTH the levels and the Score / OI / GEX
+columns. There is no "skip if unchanged" and no setting that disables it - only a
+real page load refreshes Nexus's per-strike data, so anything less can draw metrics
+from an old snapshot while the levels look current.
+
+It also checks Nexus's own freshness clock: if Nexus just published but the batch it
+read is minutes old, it retries once and then tells you rather than pasting stale
+data. Silence means it worked.
+
+PRICE ALERTS (off by default)
+-----------------------------
+Chrome notifies you when price enters the zone around a Nexus level or one of your
+own strike metrics scoring 50+. Click the BELL in the control cluster under the sync
+button to arm it - it confirms with a notification so you know it worked.
+
+  - The zone is 1 strike wide and is judged on the CURRENT BAR's high/low, so a wick
+    into a level is caught at the test rather than reported on the way out.
+  - A level stays quiet for 15 continuous minutes after price leaves its zone.
+  - Levels within a strike of each other count as one.
+  - Silent while you're actually looking at that chart.
+  - Needs Chrome running; nothing is watched while the computer sleeps.
+
+How long a notification stays on screen is an operating-system setting, not an
+extension one:
+  - Windows: Settings > System > Notifications > Google Chrome
+  - macOS:   System Settings > Notifications > Google Chrome ("Banners" makes it
+             fade on its own; "Alerts" makes it stay until dismissed)
+(The extension only ever uses YOUR own logged-in sessions. It contains no
+passwords, keys, or personal data.)
+
+INSTALL
+-------
+1. Unzip the file you were sent. You should end up with a folder named
+   "nexus-tradingview-bridge" that contains manifest.json.
+   >> Chrome loads the FOLDER, not the zip. Don't skip unzipping.
+2. Open Chrome and go to:  chrome://extensions
+3. Turn ON "Developer mode" (toggle, top-right).
+4. Click "Load unpacked".
+5. Select the "nexus-tradingview-bridge" folder (the one with manifest.json
+   directly inside it).
+6. The green "Nexus → TradingView Bridge" card appears. Done — no setup.
+
+USING IT
+--------
+1. Have both open and logged in: your Nexus dashboard AND a TradingView chart
+   with the Nexus Futures indicator.
+2. Click the little GREEN tab peeking from the right edge of the page
+   (or the extension's toolbar icon). You can drag the green tab up/down.
+3. It applies your levels and pops a panel:
+      QQQ · 14s     (ticker + how old the data is)
+      gauge  13     (Positioning)
+      bolt   9      (Tension)
+   The button shows a spinner, then a green check (done), an amber check
+   (applied, but the data was over ~10 min old — verify on the dashboard),
+   or "!" (a problem — read the notification). Every click pastes the current
+   levels; there is no "skip if unchanged."
+
+THE STRIKE METRICS COLUMNS (optional, one-time)
+---------------------------------------------
+The Score / OI / GEX columns come from a second indicator, "Nexus Extra
+Levels", included here as nexus-strike-metrics.pine. The extension CANNOT add
+it for you (Chrome extensions can't create TradingView indicators), so it's a
+one-time copy-paste into TradingView's Pine Editor. Full instructions - plus a
+copy-paste prompt if you'd rather have an AI assistant do it - are in
+SETUP-STRIKE-METRICS.md. Once it's on the chart, every sync feeds it
+automatically.
+
+GOOD TO KNOW
+------------
+- Your TradingView chart's SYMBOL drives everything (usually QQQ). The numbers
+  always match what you're charting -- you don't manage the Nexus tab yourself.
+- It works wherever Nexus is:
+    * Nexus tab open on the chart's ticker, data under ~4 min old -> read in
+      place and applied, no flash (even if that tab is hidden).
+    * Data older than ~4 min, a different ticker, or a failed read -> it reuses
+      YOUR Nexus tab: briefly brings it forward, reloads it live, reads, and
+      hops back to the chart. One quick flash, no new tab.
+    * If that reuse struggles (or Nexus isn't open) -> it opens a quick "blink"
+      tab as a last resort (~10s), reads it, and closes it. So a sync always
+      resolves instead of spinning -- it never hangs.
+- Freshness (CHANGED in v1.3.0): the age now tells you how old THE LEVELS ON YOUR
+  CHART are -- read from the per-ticker stamp in Nexus's export panel ("QQQ ...
+  6 niveles - 11:37:43"). It used to show the live FEED age, which was misleading:
+  TradingView only ever gets the export batch, and Nexus rebuilds that on a slower,
+  per-ticker cadence. Measured live, the feed said 26s while QQQ's export batch was
+  140s old. If what it pasted is over ~10 min old it warns loudly (a "data is N min
+  old" notification + amber badge + red age) so you verify on the live dashboard.
+  The age stays honest even on a hidden/frozen tab.
+- Color coding matches the dashboard:
+    * Positioning (absolute value): green 0-10, yellow 10-40, red 40+
+    * Tension: green 0-33, yellow 33-66, red 66+
+    * The age (next to the ticker) turns amber after a couple minutes, red over 10.
+
+STALENESS WATCHER (on by default)
+----------------------------------
+The floating button turns AMBER with a refresh icon (and the toolbar badge goes
+amber) once your chart's levels get stale -- your at-a-glance "time to re-sync"
+cue. It NEVER changes your chart on its own; clicking to sync clears the amber.
+Default: amber after 10 minutes (tune in Options).
+
+CHANGED in v1.3.0 -- what it watches. It used to fetch Nexus and diff the LIVE
+level cards against your baseline. That never worked: the export levels aren't in
+the fetchable HTML (they only exist once the export view renders), so every cycle
+bailed with "no fresh levels -- skip" and the button sat green through real moves.
+It now watches AGE, with no network call:
+    age_now = export age when pasted + time elapsed since
+Past the threshold -> amber. Nothing to fetch, nothing to fail, and it tracks the
+EXPORT batch your chart is built from.
+
+ARMING IT: a chart is only watched once you've synced it on v1.3.0 or later --
+that sync is what records the stamp. Sync each chart once after updating.
+
+NOTES
+-----
+- Chrome may show a "Disable developer-mode extensions" popup on startup.
+  That's normal for any manually-installed extension — just close it.
+- Updates aren't automatic: to update, replace this folder with a new copy,
+  then click the reload (circular arrow) icon on the extension's card, and
+  refresh your Nexus and TradingView tabs.
+- If you're on a company-managed Chrome profile, IT policy may block unpacked
+  extensions. Use a personal profile if so.
+- If your chart's zoom/scale jumps when new levels apply, that's TradingView
+  auto-scaling to the levels (not the extension). Right-click the price scale ->
+  "Scale price chart only" to keep your view locked.
+
+TROUBLESHOOTING
+---------------
+- Nothing happens / error notification: make sure BOTH tabs are open and
+  logged in, and that an indicator whose name starts with "Nexus Futures"
+  is on the chart (V3, V4.1, etc. all work).
+- Levels look old: check the age on the panel. If it's red, try again.
+- To see logs: chrome://extensions -> the card -> "Inspect views: service
+  worker" -> Console tab. Lines are prefixed [NexusBridge/...].
