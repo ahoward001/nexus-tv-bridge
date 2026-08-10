@@ -9,6 +9,14 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.1.5 — 2026-08-10
+
+- **The changelog now ships with the package.** [CHANGELOG.md](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md) covers every version back to 3.14.3 and is written by the release command itself, so it can't fall behind the release pages.
+- **The build refuses to package stray files.** `web-ext` leaves a `.amo-upload-uuid` behind in the source folder after signing, and it had already ended up inside an archive once. The build stops rather than shipping it.
+- **The README's version header is stamped** from the manifest like the other docs — it had gone stale at 3.14.3 while the extension was several versions ahead.
+
+*Nothing changed in how the extension behaves. No need to re-paste the Pine script.*
+
 ## v4.1.4 — 2026-08-10
 
 Packaging and docs. No behaviour changes.
