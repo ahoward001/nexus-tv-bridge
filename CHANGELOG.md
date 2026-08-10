@@ -9,6 +9,13 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.1.6 — 2026-08-10
+
+- **Shorter extension description.** The manifest description was 151 characters; the Chrome Web Store caps it at 132, so it was rejected at upload. Now 113: *"Copies your Nexus levels onto your TradingView chart and fills per-strike Score / OI / GEX columns on every sync."* It's also a plainer description of what the thing does than the old one was.
+- **A Chrome Web Store build.** `package.sh` now also produces a store-ready archive with `manifest.json` at the root — the Store rejects the nested-folder layout the hand-send zip uses, the same way Firefox does.
+
+*Cosmetic only. Nothing changed in how the extension behaves, and the Pine script is unchanged.*
+
 ## v4.1.5 — 2026-08-10
 
 - **The changelog now ships with the package.** [CHANGELOG.md](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md) covers every version back to 3.14.3 and is written by the release command itself, so it can't fall behind the release pages.
