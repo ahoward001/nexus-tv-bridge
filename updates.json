@@ -1,1 +1,12 @@
-{"addons":{"nexus-tv-bridge@aidanhoward":{"updates":[{"version":"4.0.0","update_link":"https://github.com/ahoward001/nexus-tv-bridge/releases/download/v4.0.0/nexus-tradingview-bridge-firefox-v4.0.0.xpi"}]}}}
+{
+  "addons": {
+    "nexus-tv-bridge@aidanhoward": {
+      "updates": [
+        {
+          "version": "4.1.0",
+          "update_link": "https://github.com/ahoward001/nexus-tv-bridge/releases/download/v4.1.0/nexus-tradingview-bridge-firefox-v4.1.0.xpi"
+        }
+      ]
+    }
+  }
+}
