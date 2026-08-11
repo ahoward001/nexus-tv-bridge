@@ -9,6 +9,23 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.4 — 2026-08-11
+
+**A sync that finds fresh data now takes about 2 seconds instead of 9.**
+
+The rule was wrong. Every click was reloading your Nexus tab unconditionally — about 5.5 seconds — even when the data it already had was a minute old and perfectly current. That came from reading "every click refreshes everything" as *always reload*, when what it should have meant is *never paste something staler than it claims to be*.
+
+Now a click **reads first, then decides**:
+
+- Batch younger than the threshold → use it. Whole sync finishes in ~2s.
+- Batch older, or unreadable → reload for the current one, as before.
+
+`exportAge` is the honest measure here: it's the age of Nexus's own batch as embedded in the page, so a hidden tab that Chrome froze an hour ago reports an hour-old batch — exactly the case a reload fixes — while a tab republished a minute ago is already current.
+
+**New setting:** *Reload Nexus only if its data is older than N seconds*, default **180**. Nexus republishes roughly once a minute, so 180 means "more than about three publishes behind". Lower it for fresher data at ~5.5s a click; raise it for speed. The age is surfaced either way, so nothing is ever silently stale.
+
+Also removed a redundant read that cost ~1.9s on every click regardless.
+
 ## v4.2.3 — 2026-08-11
 
 **Sync is roughly 2 seconds faster.** Every click was reading your Nexus tab, then immediately reloading it and throwing that first read away — about 1.9s of a 9.4s sync, on every single click.
