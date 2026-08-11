@@ -6,6 +6,39 @@ Newest first.
 
 ---
 
+## v4.3.3 — 2026-08-11
+
+**Fixes a bug in 4.2.4–4.3.2: the columns could be left stale while the levels updated.**
+
+The fast path skipped the reload whenever Nexus's export was fresh — but a sync writes two things, and the *strike table* can be unreadable from a tab even when the export is fine. When that happened you got current levels next to Score / OI / GEX numbers from an earlier read, and the sync still took ~9s because the strike reader retried before giving up.
+
+The fast path now has to be able to deliver **everything**. If the strike table can't be read, that counts as stale and it reloads — which fixes it.
+
+The extension did flag this itself (*"Strike metrics didn't update — the columns are stale"*), so it was visible rather than silent. But visible-and-wrong is still wrong.
+
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-CHROME-SETUP-…​.zip`** — the Chrome extension, as a file.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `0-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v4.3.2 — 2026-08-11
 
 Presentation only, no code changes: Firefox now has a real one-click install link instead of a link back to this page, each asset says what clicking it actually does, and the version history is rebuilt with every release back to 1.0.
