@@ -9,6 +9,23 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.5 — 2026-08-11
+
+**A click reloads when it should, and only when it should.**
+
+Two things now trigger a reload:
+
+- **The batch is older than your threshold** (default 180s — Nexus republishes about once a minute)
+- **A key level moved** — Call Wall, Put Wall or Gamma Flip differs from what was last pasted on this chart. Structural change is worth 5s to be certain, even on a young batch.
+
+Deliberately *not* included: strike metrics. Those churn on every publish with no real consequence, so gating on them would reload every single click and undo the speedup.
+
+This is the **click** path only. The amber staleness cue on the button keeps its own rule — walls are finicky when price sits on them, and a wall twitching shouldn't nag you.
+
+**Faster page-load wait.** The hard wait after a reload dropped from 4s to 2s. It was never the real gate anyway: the reader polls every 80ms for the export code and only accepts it once there's actual content, so waiting longer up front just delayed the polling that does the real work.
+
+When nothing has moved and the data is young, a sync is ~2s instead of ~9s. When something has moved, it pays for the reload.
+
 ## v4.2.4 — 2026-08-11
 
 **A sync that finds fresh data now takes about 2 seconds instead of 9.**
