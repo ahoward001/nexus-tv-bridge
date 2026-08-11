@@ -9,6 +9,18 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.3.0 — 2026-08-11
+
+**The button now goes yellow when a strike newly earns a line.**
+
+Between syncs, the watcher re-runs the same 2-of-3 significance rule against Nexus's current strike table and compares it to the line set from your last sync. If a strike that had no dotted line now qualifies, the button goes **yellow**.
+
+Yellow, not orange, on purpose — that reading comes from a tab that hasn't been reloaded, so it's a strong hint rather than proof. Yellow has always meant *"something looks different and I couldn't confirm it."* Clicking sync reloads, confirms, and draws the level for real.
+
+**Only additions count.** A level disappearing doesn't raise anything: it's not something you need to rush to the chart for, and treating both directions as news would make the button flicker every time a borderline strike crossed the rule.
+
+This is separate from the reload triggers — a click still reloads only when the batch is past your age threshold or a key wall moved. Metric churn still never forces a reload; a level *appearing* is structural, and it earns a nudge rather than a 5-second wait.
+
 ## v4.2.5 — 2026-08-11
 
 **A click reloads when it should, and only when it should.**
