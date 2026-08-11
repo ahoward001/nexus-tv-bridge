@@ -6,6 +6,45 @@ Newest first.
 
 ---
 
+## v4.4.0 — 2026-08-11
+
+⚠️ **Re-paste the Pine script for this one** — the indicator changed. Copy it again from step 3 above; your saved settings survive.
+
+**Brightness slider.** New *Brightness — bold ← → faded* control in settings. It washes out the whole overlay together — bubbles, boxes and dotted lines — without disturbing the relative weighting that makes big levels read heavier than small ones. It rides on top of the individual colour settings rather than replacing them, so any tuning you've already done survives.
+
+**The Score column sits closer.** All three columns were spaced by the same number of bars, but Score holds one or two characters while OI and GEX hold things like `−29.4M` — so an identical gap left visibly more whitespace after Score. It's now shifted a quarter-gap right so the three *look* evenly spaced. Fixed rather than adjustable: it corrects an imbalance rather than expressing a preference.
+
+### Also fixed
+
+**Columns could be left stale while the levels updated.** The fast path skipped the reload whenever the export was fresh — but the strike table can be unreadable even when the export is fine, and the columns then silently kept old numbers. The fast path now has to deliver everything, and reloads if it can't.
+
+**A sync that couldn't read strikes took ~9 seconds.** The reader's internal waits (~4.4s) were tuned separately and never added up, and the caller made two passes over the same tab. Reader is now bounded to ~2s, one pass, 3s cap — then it blinks, which is what actually fixes it.
+
+**It always pastes something now.** A stale strike snapshot used to be discarded, leaving nothing; it's now used as a labelled fallback and both ages are reported — so "current levels, older columns" says so instead of looking like a clean sync.
+
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-CHROME-SETUP-…​.zip`** — the Chrome extension, as a file.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `0-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v4.3.3 — 2026-08-11
 
 **Fixes a bug in 4.2.4–4.3.2: the columns could be left stale while the levels updated.**
