@@ -9,6 +9,39 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.3.1 — 2026-08-11
+
+Presentation only — no code changes. Assets are renamed and numbered in the order you'd actually use them, this page says what each file does when you click it, and the push time is stamped at the top so you can tell how current the Store version is by comparison.
+
+### Recent releases
+
+**4.3.0** — the button goes **yellow** when a strike newly earns a line. Between syncs the watcher re-runs the 2-of-3 rule against Nexus's live strike table and diffs it against your last sync. Yellow rather than orange because it's read from a tab that hasn't been reloaded — a strong hint, not proof. Only additions count, so the button doesn't flicker when a borderline strike drops out.
+
+**4.2.5** — a sync that finds fresh data now takes **~2 seconds instead of ~9**. A click reads your Nexus tab first and only reloads when the data is genuinely old or a key wall moved, instead of reloading every single time.
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what each file is, and what clicking it actually does
+
+**1 · `0-CHROME-SETUP-…​.zip`** — the Chrome extension.
+Clicking **downloads a zip. It does not install anything.** Chrome cannot install an extension from a file, so: unzip it → go to `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside). Chrome loads the *folder*, not the zip. Installed this way it will **not** auto-update — use the Web Store link above for that.
+
+**2 · `1-FIREFOX-SETUP-…​.xpi`** — the Firefox extension.
+Clicking this **in Firefox** does install it — Firefox will ask *"Add Nexus → TradingView Bridge?"*. (In Chrome it just downloads a useless file.) Then two things Firefox needs and Chrome doesn't:
+- Paste `about:addons` in the address bar → **Nexus → TradingView Bridge** → **Permissions** → enable **dashboard.nexusfutures.net** and **tradingview.com**. Firefox treats these as *optional* and won't grant them for you. **Without this it looks broken and gives no error** — clicking sync opens a new Nexus tab, lands on the login page, and sits there.
+- Same page, **⋯** menu → **Allow Automatic Updates**.
+
+**3 · `2-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+Clicking **downloads a text file. Nothing installs.** You copy its contents into TradingView by hand — or skip the download and [view and copy it here](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine).
+In TradingView: **Pine Editor** (grid/apps icon at the **bottom-right** of the chart) → click into the code → select all → paste → **Ctrl+S** to save the script → **Add to chart** *once* → click the chart and **Ctrl+S** again to save the **layout**. That second save is what stops it vanishing on reload.
+*Already have it and re-pasting an update?* Use the **`{ }`** brackets icon on the indicator's row in the chart legend — that opens the live source. If you see *"This is a historical version of the script"*, you're in a read-only snapshot and pasting will silently do nothing; open it from the script-name dropdown → **My scripts** instead.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser without downloading: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they are not the extension.*
+
 ## v4.3.0 — 2026-08-11
 
 **The button now goes yellow when a strike newly earns a line.**
