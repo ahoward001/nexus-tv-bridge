@@ -9,6 +9,13 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.2 — 2026-08-11
+
+- **Chrome releases now publish themselves.** `release.sh` uploads the store build and submits it for review over the Web Store API, so Chrome and Firefox both ship from one command. This is the first release to do it.
+- **Assets renumbered** so the list reads in setup order with no gaps: `0-CHROME` zip, `1-SETUP` Firefox, `2-` Pine, then the three guides.
+
+*Nothing changed in how the extension behaves. The Pine script is unchanged.*
+
 ## v4.2.1 — 2026-08-11
 
 **The Chrome Web Store listing is live.** Chrome now installs in one click and updates itself, which it has never done before — every previous Chrome fix meant someone re-sending a zip.
