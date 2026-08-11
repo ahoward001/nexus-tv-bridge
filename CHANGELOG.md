@@ -6,6 +6,47 @@ Newest first.
 
 ---
 
+## v4.4.1 — 2026-08-11
+
+**Fixes a 14-second sync introduced in 4.3.3.** That release added a check for "can the strike table be read?" before deciding whether to reload — but the only way to read it clicks TradingView's Overview nav, which navigated your Nexus tab off the Export view. The *next* sync then found no export code and fell all the way through to opening a fresh tab: 14.7s instead of ~2s. The check broke the thing it was checking.
+
+The check is gone. The problem it guarded against is still handled, just without side effects: if the strike read comes back empty the reload happens then, and a stale snapshot is pasted-and-labelled rather than dropped.
+
+### From 4.4.0
+
+**Brightness slider** — *bold ← → faded* in settings. Washes out bubbles, boxes and dotted lines together without disturbing the relative weighting that makes big levels read heavier.
+
+**The Score column sits closer.** All three were spaced identically in bars, but Score holds `49` while GEX holds `−29.4M`, so equal spacing left more whitespace after Score. Shifted a quarter-gap right so they look even.
+
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-CHROME-SETUP-…​.zip`** — the Chrome extension, as a file.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `0-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from the link in step 3 above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.4.0 — 2026-08-11
 
 ⚠️ **Re-paste the Pine script for this one** — the indicator changed. Copy it again from step 3 above; your saved settings survive.
