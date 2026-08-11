@@ -1,6 +1,6 @@
 Nexus → TradingView Bridge — Install (Chrome: Windows, macOS or Linux)
 ================================================================
-Version 4.2.0
+Version 4.2.1
 
 WHAT IT DOES
 ------------
@@ -67,9 +67,9 @@ and you never need another zip from anyone.
 The listing is UNLISTED: it does not appear in Web Store search, and only people
 with this link can install it.
 
-(If the link doesn't open a listing yet, the current version is still in Google's
-review queue. Use the manual method below in the meantime — you can switch to the
-Store version later by removing the unpacked one and clicking the link.)
+Already installed the manual way? Remove that one from chrome://extensions first,
+then use the link above — otherwise you'll have two copies and the extension writes
+to whichever it finds first.
 
 INSTALL — the manual way (no auto-updates)
 ------------------------------------------
