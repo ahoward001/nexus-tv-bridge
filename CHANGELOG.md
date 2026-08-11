@@ -2,9 +2,7 @@
 
 **MAJOR** = a whole new capability · **MINOR** = a feature within one · patch = a bug fix.
 
-> Versions before 4.0.0 predate this file. They're reconstructed from the project's
-> own working notes and from version references left in the code, so the milestones
-> are accurate but the per-patch detail is thinner than the 4.x entries.
+Newest first.
 
 ---
 
