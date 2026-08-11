@@ -3,8 +3,8 @@
     "nexus-tv-bridge@aidanhoward": {
       "updates": [
         {
-          "version": "4.2.1",
-          "update_link": "https://github.com/ahoward001/nexus-tv-bridge/releases/download/v4.2.1/1-SETUP-nexus-tv-bridge-firefox-v4.2.1.xpi"
+          "version": "4.2.2",
+          "update_link": "https://github.com/ahoward001/nexus-tv-bridge/releases/download/v4.2.2/1-SETUP-nexus-tv-bridge-firefox-v4.2.2.xpi"
         }
       ]
     }
