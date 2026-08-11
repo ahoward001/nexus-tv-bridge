@@ -9,6 +9,22 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.0 — 2026-08-10
+
+**Chrome installs from the Web Store now, and updates itself.**
+
+> https://chromewebstore.google.com/detail/aolfgeibjdabmhmdbhgeffamkgjkekbi
+
+Click **Add to Chrome** and you're done — Chrome keeps you current from then on, the same way Firefox already did. The listing is **unlisted**: not searchable, only reachable with that link.
+
+*If that link doesn't open a listing yet, the first version is still in Google's review queue — use the zip below meanwhile and switch over later.*
+
+Why this took a Store listing rather than a GitHub link: **Chrome blocks off-store extension installs** on Windows and macOS and ignores `update_url` for anything loaded unpacked. Hosting the zip on GitHub can never give Chrome users auto-updates. That's a Chrome restriction, not a gap here — and it's why Firefox has had silent updates all along while Chrome needed a zip re-sent for every fix.
+
+The manual **Load Unpacked** path still works and is documented as the fallback, with the tradeoff stated plainly: installed that way, Chrome will never update it.
+
+*Nothing changed in how the extension behaves. The Pine script is unchanged.*
+
 ## v4.1.6 — 2026-08-10
 
 - **Shorter extension description.** The manifest description was 151 characters; the Chrome Web Store caps it at 132, so it was rejected at upload. Now 113: *"Copies your Nexus levels onto your TradingView chart and fills per-strike Score / OI / GEX columns on every sync."* It's also a plainer description of what the thing does than the old one was.
