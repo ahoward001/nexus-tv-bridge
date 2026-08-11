@@ -9,6 +9,18 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.1 — 2026-08-11
+
+**The Chrome Web Store listing is live.** Chrome now installs in one click and updates itself, which it has never done before — every previous Chrome fix meant someone re-sending a zip.
+
+> https://chromewebstore.google.com/detail/aolfgeibjdabmhmdbhgeffamkgjkekbi
+
+Both browsers now keep themselves current: Firefox from GitHub, Chrome from the Store.
+
+Docs updated to match — they previously told Chrome users the listing was still in review.
+
+*Nothing changed in how the extension behaves. The Pine script is unchanged.*
+
 ## v4.2.0 — 2026-08-10
 
 **Chrome installs from the Web Store now, and updates itself.**
