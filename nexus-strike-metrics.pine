@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.3.3
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.4.0
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -65,6 +65,20 @@ bubbleGap  = input.int(15, "Bubble spacing (bars)", minval = 2, maxval = 40, gro
 labelPosI  = input.string("Above", "Label float", options = ["Above", "Below", "Up-right", "Down-right"], group = "Style",
      tooltip = "Where the bubble sits vs its level. 'Above' puts it over the level with the pointer pointing DOWN to it.")
 lineWidth  = input.int(2, "Line width", minval = 1, maxval = 4, group = "Style")
+
+// Overall brightness. Rides ON TOP of the individual transparency inputs below
+// rather than replacing them, so any tuning you have done there survives. 0 = as
+// configured; higher = everything progressively more see-through.
+fadeAll    = input.int(0, "Overall fade (%)", minval = 0, maxval = 80, group = "Style",
+     tooltip = "Washes out every bubble and box together. 0 keeps the colours as set below; 80 is nearly invisible. Use it to dial the whole overlay back without re-tuning each colour.")
+
+// The Score column sits a FIXED fraction of a gap closer to OI. Not an input:
+// it corrects a visual imbalance rather than expressing a preference. Score
+// bubbles hold 1-2 characters while OI/GEX hold things like "-29.4M", so an
+// identical bar gap leaves visibly more whitespace after Score. Shifting it right
+// by a quarter gap makes the three columns *look* evenly spaced, which is the
+// thing that actually matters.
+SCORE_NUDGE = 0.25
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
@@ -184,7 +198,12 @@ opacityOf(hRaw) =>
     // (sqrt) lifts the mid-range — 25% of max reads as 50% intensity — so a genuinely
     // large-but-not-largest level still looks strong.
     h = math.pow(math.max(0.0, math.min(1.0, hRaw)), heatCurve)
-    h < 0.5 ? insigFade - (h / 0.5) * (insigFade - midT) : midT - ((h - 0.5) / 0.5) * (midT - darkT)
+    t = h < 0.5 ? insigFade - (h / 0.5) * (insigFade - midT) : midT - ((h - 0.5) / 0.5) * (midT - darkT)
+    // fadeAll rides on top: push whatever transparency this box earned the rest of
+    // the way toward invisible, proportionally. Every bubble goes through here, so
+    // one slider moves the whole overlay without disturbing the relative weighting
+    // that makes big levels read as heavier than small ones.
+    t + (100.0 - t) * (fadeAll / 100.0)
 
 // NOTE: Pine labels have NO font-weight — there is no bold. Unicode bold glyphs
 // render as TOFU/garbage in TradingView's label font (tried it). The heaviest look
@@ -303,7 +322,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
                         gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
                         // Line matches the score band color (no Nexus blue/pink on the lines either).
-                        lineCol  = color.new(scoreHue, 8)
+                        lineCol  = color.new(scoreHue, 8 + (100.0 - 8) * (fadeAll / 100.0))
 
                         // Only the flagged (significant, non-exported) levels keep a
                         // dotted line; every strike still gets its bubbles below.
@@ -321,7 +340,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                             // one off closes the gap instead of leaving a blank lane.
                             slot = 0
                             if showScore
-                                drawBubble(labelOff + slot * bubbleGap, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE), price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz)
                                 slot += 1
                             if showOi
                                 drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz)
@@ -334,7 +353,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
         titleP = maxP + math.max((maxP - minP) * hdrGapPct / 100.0, maxP * 0.0008)
         hSlot = 0
         if showScore
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "SCORE")
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * SCORE_NUDGE), titleP, "SCORE")
             hSlot += 1
         if showOi
             drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "OI")
