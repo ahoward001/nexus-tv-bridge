@@ -9,6 +9,16 @@ MINOR is a feature within one, PATCH is a bug fix.
 
 ---
 
+## v4.2.3 — 2026-08-11
+
+**Sync is roughly 2 seconds faster.** Every click was reading your Nexus tab, then immediately reloading it and throwing that first read away — about 1.9s of a 9.4s sync, on every single click.
+
+That pre-read made sense when the reload was conditional: the decision needed to know how old the current batch was. Once "every click refreshes everything" became unconditional, the pre-read became pure cost. The one thing it still contributed was the previous levels to diff against, and that's already stored on every successful sync — so the "levels CHANGED / nothing actually new" line now comes from the stored hash instead of a second page read.
+
+The reload itself (~5.5s) is unchanged and still mandatory: only a real page load refreshes Nexus's embedded strike payload, so anything cheaper risks pasting Score / OI / GEX from an old snapshot while the levels look current.
+
+*No behaviour change beyond the speed. If a reload fails, the recovery path is unchanged — reload again, then a fresh tab.*
+
 ## v4.2.2 — 2026-08-11
 
 - **Chrome releases now publish themselves.** `release.sh` uploads the store build and submits it for review over the Web Store API, so Chrome and Firefox both ship from one command. This is the first release to do it.
