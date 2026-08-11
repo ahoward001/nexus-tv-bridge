@@ -1,6 +1,6 @@
 Nexus → TradingView Bridge — Install (Chrome: Windows, macOS or Linux)
 ================================================================
-Version 4.1.6
+Version 4.2.0
 
 WHAT IT DOES
 ------------
@@ -55,8 +55,27 @@ extension one:
 (The extension only ever uses YOUR own logged-in sessions. It contains no
 passwords, keys, or personal data.)
 
-INSTALL
--------
+INSTALL — the easy way (recommended)
+-----------------------------------
+Open this link in Chrome and click "Add to Chrome":
+
+  https://chromewebstore.google.com/detail/aolfgeibjdabmhmdbhgeffamkgjkekbi
+
+That's it. Installed this way, Chrome UPDATES IT FOR YOU — you never reinstall,
+and you never need another zip from anyone.
+
+The listing is UNLISTED: it does not appear in Web Store search, and only people
+with this link can install it.
+
+(If the link doesn't open a listing yet, the current version is still in Google's
+review queue. Use the manual method below in the meantime — you can switch to the
+Store version later by removing the unpacked one and clicking the link.)
+
+INSTALL — the manual way (no auto-updates)
+------------------------------------------
+Use this only if you can't use the Store link. Chrome will NOT update an
+extension installed this way; you'll need a new zip for every fix.
+
 1. Unzip the file you were sent. You should end up with a folder named
    "nexus-tradingview-bridge" that contains manifest.json.
    >> Chrome loads the FOLDER, not the zip. Don't skip unzipping.
@@ -66,6 +85,11 @@ INSTALL
 5. Select the "nexus-tradingview-bridge" folder (the one with manifest.json
    directly inside it).
 6. The green "Nexus → TradingView Bridge" card appears. Done — no setup.
+
+Note: Chrome cannot auto-update an extension from a file or a GitHub link. That
+is a Chrome restriction, not a missing feature here — the Web Store is the only
+route that keeps Chrome users current. (Firefox is different: it updates from
+GitHub directly.)
 
 USING IT
 --------
