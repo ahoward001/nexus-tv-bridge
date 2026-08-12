@@ -6,6 +6,22 @@ Newest first.
 
 ---
 
+## v4.6.3 — 2026-08-12
+
+⚠️ **Re-paste the Pine script** — indicator-only.
+
+**Reverts 4.6.2's anchoring change.** That release centred every bubble on its anchor so the columns would line up with their headers at any text width. It worked, but it moved all three columns off where they were wanted — the anchoring wasn't the problem.
+
+**The Score column is the only one that needed it.** Its text is one or two characters, so hanging it off a corner leaves it visibly left of its header while the wide OI and GEX boxes look fine. Score is now centred on its own anchor and bumped two bars right; OI and GEX are exactly as they were before 4.6.2.
+
+Also: **Header nudge is back to a default of 2** bars, matching where the titles already sat.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.6.2 — 2026-08-12
 
 ⚠️ **Re-paste the Pine script** — indicator-only, and it needs one settings change, below.
