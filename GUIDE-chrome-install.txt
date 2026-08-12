@@ -1,6 +1,6 @@
 Nexus → TradingView Bridge — Install (Chrome: Windows, macOS or Linux)
 ================================================================
-Version 4.5.1
+Version 4.5.2
 
 WHAT IT DOES
 ------------
