@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.5.0
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.5.1
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -87,7 +87,7 @@ SCORE_NUDGE = 0.25
 // same argument as above, it corrects an imbalance rather than expressing taste.
 // Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
 // instead of drifting out of proportion when you widen the columns.
-GEX_NUDGE = -0.15
+GEX_NUDGE = -0.08
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
