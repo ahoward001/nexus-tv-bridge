@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.6.2
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.6.3
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -88,6 +88,10 @@ SCORE_NUDGE = 0.25
 // Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
 // instead of drifting out of proportion when you widen the columns.
 GEX_NUDGE = -0.08
+// Whole bars, not a fraction: this one is compensating for the centred anchor above
+// (a centred narrow box sits half its width left of where a corner-anchored one would),
+// which is a fixed pixel effect rather than something that scales with column spacing.
+SCORE_BUMP = 2
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
@@ -140,7 +144,7 @@ showTitle = input.bool(true, "Show header row", group = "Colors")
 hdrGapPct = input.float(6.5, "Header gap (% of range)", minval = 1.0, maxval = 25.0, step = 0.5, group = "Colors",
      tooltip = "Vertical distance from the top level up to the header row, as a % of the drawn price range. " +
      "Lower = headers sit closer to the levels.")
-hdrShift  = input.float(0.0, "Header nudge (bars)", minval = -10, maxval = 10, step = 0.5, group = "Colors",
+hdrShift  = input.float(2.0, "Header nudge (bars)", minval = -10, maxval = 10, step = 0.5, group = "Colors",
      tooltip = "Headers use a straight-DOWN tail, which centres the chip on its anchor, while the data " +
      "bubbles anchor a corner. This nudges the header right so it sits over its column. Pine can't measure " +
      "label width, so tune this by eye if your label size or font changes.")
@@ -165,15 +169,8 @@ effSz = sizeNum > 0 ? numToName(sizeNum) : labelSizeI
 // OPPOSITE way. So a box that floats DOWN-RIGHT needs the pointer pointing
 // UP-LEFT (style_label_upper_left), etc. This maps plain box-direction names to
 // the right style so the input reads the way the eye sees it.
-// "Above" is CENTRED on its anchor (style_label_down), deliberately: the header chips
-// are centred too, so a centred bubble lines up with its header by construction, at any
-// text width. It used to be style_label_lower_left, which anchors the box's lower-LEFT
-// corner — so every bubble hung to the right of its anchor by half its own width, and
-// since "+154.1M" is far wider than "43", the OI and GEX columns drifted right of their
-// headers while SCORE looked almost right. No offset can fix that; only the anchor can,
-// because the drift is a function of the text.
 labelStyleOf(s) =>
-    s == "Above"     ? label.style_label_down :
+    s == "Above"     ? label.style_label_lower_left :
      s == "Below"    ? label.style_label_up :
      s == "Up-right" ? label.style_label_lower_right :
      label.style_label_upper_left
@@ -239,10 +236,14 @@ var label[] lbs = array.new_label()
 
 // Draw one bubble (own text + background color) and remember it for cleanup.
 // Empty text draws nothing, so a missing column just leaves a gap.
-drawBubble(int off, float price, string txt, color txtCol, color bgCol, string szName) =>
+// `ctr` centres THIS bubble on its anchor instead of hanging it off the corner. Only the
+// SCORE column uses it: its text is one or two characters, so corner-anchoring leaves it
+// visibly left of its header while the wide OI/GEX boxes look fine. Centring everything
+// (tried in 4.6.2) moved the columns off where they were wanted — this is the narrow fix.
+drawBubble(int off, float price, string txt, color txtCol, color bgCol, string szName, bool ctr) =>
     if str.length(txt) > 0
         lb = label.new(bar_index + off, price, txt,
-             style     = labelStyleOf(labelPosI),
+             style     = ctr ? label.style_label_down : labelStyleOf(labelPosI),
              color     = bgCol,
              textcolor = txtCol,
              size      = sizeOf(szName),
@@ -360,13 +361,13 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                             // one off closes the gap instead of leaving a blank lane.
                             slot = 0
                             if showScore
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE), price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, true)
                                 slot += 1
                             if showOi
-                                drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz)
+                                drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz, false)
                                 slot += 1
                             if showGex
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
 
     // Header row above the top level, labelling each column.
     if showTitle and enabled and not na(maxP)
