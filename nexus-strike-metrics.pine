@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.4.4
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.4.5
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -69,8 +69,10 @@ lineWidth  = input.int(2, "Line width", minval = 1, maxval = 4, group = "Style")
 // Overall brightness. Rides ON TOP of the individual transparency inputs below
 // rather than replacing them, so any tuning you have done there survives. 0 = as
 // configured; higher = everything progressively more see-through.
-fadeAll    = input.int(0, "Overall fade (%)", minval = 0, maxval = 80, group = "Style",
-     tooltip = "Washes out every bubble and box together. 0 keeps the colours as set below; 80 is nearly invisible. Use it to dial the whole overlay back without re-tuning each colour.")
+fadeAll    = input.int(0, "Overall brightness (%)", minval = -80, maxval = 80, group = "Style",
+     tooltip = "One control for the whole overlay, centred on 0. 0 keeps the colours exactly as set below; " +
+     "POSITIVE fades everything toward invisible; NEGATIVE pushes everything toward solid. Both directions are " +
+     "proportional, so the relative weighting that makes big levels read heavier than small ones survives either way.")
 
 // The Score column sits a FIXED fraction of a gap closer to OI. Not an input:
 // it corrects a visual imbalance rather than expressing a preference. Score
@@ -79,6 +81,13 @@ fadeAll    = input.int(0, "Overall fade (%)", minval = 0, maxval = 80, group = "
 // by a quarter gap makes the three columns *look* evenly spaced, which is the
 // thing that actually matters.
 SCORE_NUDGE = 0.25
+// GEX comes back in by a smaller fraction, for the mirror-image reason: OI's own
+// labels are wide ("+8.7K"), so the whitespace between OI and GEX reads larger than
+// the gap before it even though the bar spacing is identical. Also not an input —
+// same argument as above, it corrects an imbalance rather than expressing taste.
+// Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
+// instead of drifting out of proportion when you widen the columns.
+GEX_NUDGE = -0.15
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
@@ -203,7 +212,11 @@ opacityOf(hRaw) =>
     // the way toward invisible, proportionally. Every bubble goes through here, so
     // one slider moves the whole overlay without disturbing the relative weighting
     // that makes big levels read as heavier than small ones.
-    t + (100.0 - t) * (fadeAll / 100.0)
+    // Symmetric: positive pushes t toward 100 (invisible), negative pulls it toward
+    // 0 (solid), both by the same proportional rule — so brightening cannot invert
+    // the ordering any more than fading can. Clamped because -80 on an already-solid
+    // box would otherwise compute a negative transparency.
+    math.max(0.0, math.min(100.0, t + (100.0 - t) * (fadeAll / 100.0)))
 
 // NOTE: Pine labels have NO font-weight — there is no bold. Unicode bold glyphs
 // render as TOFU/garbage in TradingView's label font (tried it). The heaviest look
@@ -322,7 +335,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
                         gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
                         // Line matches the score band color (no Nexus blue/pink on the lines either).
-                        lineCol  = color.new(scoreHue, 8 + (100.0 - 8) * (fadeAll / 100.0))
+                        lineCol  = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
 
                         // Only the flagged (significant, non-exported) levels keep a
                         // dotted line; every strike still gets its bubbles below.
@@ -346,7 +359,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                                 drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz)
                                 slot += 1
                             if showGex
-                                drawBubble(labelOff + slot * bubbleGap, price, gex, txtOn(gHeat >= 0.62), gexBg, effSz)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz)
 
     // Header row above the top level, labelling each column.
     if showTitle and enabled and not na(maxP)
@@ -359,4 +372,4 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
             drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "OI")
             hSlot += 1
         if showGex
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "GEX")
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
