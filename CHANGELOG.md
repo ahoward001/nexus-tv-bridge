@@ -6,6 +6,27 @@ Newest first.
 
 ---
 
+## v4.6.0 — 2026-08-12
+
+## Read this first
+
+**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
+**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.6.0.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
+
+**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
+`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
+**dashboard.nexusfutures.net** and **tradingview.com**.
+
+**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
+**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
+repeat step 1.
+
+**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
+— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
+It is NOT part of the extension and never auto-updates.
+
+Requires Firefox 128+.
+
 ## v4.5.3 — 2026-08-12
 
 ## Read this first
