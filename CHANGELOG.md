@@ -8,108 +8,41 @@ Newest first.
 
 ## v4.6.2 — 2026-08-12
 
-## Read this first
+⚠️ **Re-paste the Pine script** — indicator-only, and it needs one settings change, below.
 
-**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
-**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.6.2.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
+**The columns now line up under their headers.** The header chips were centred on their anchor while the bubbles hung up-and-to-the-right of theirs, so every bubble drifted right by half its own text width — barely visible on a two-character score, obvious on `+154.1M`. Bubbles are centred now too, so they align at any text width rather than by a tuned offset that only holds for one number length.
 
-**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
-`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
-**dashboard.nexusfutures.net** and **tradingview.com**.
-
-**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
-**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
-repeat step 1.
-
-**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
-— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
-It is NOT part of the extension and never auto-updates.
-
-Requires Firefox 128+.
+**After pasting, set "Header nudge (bars)" to 0** in the indicator settings. It defaulted to 2 to compensate for the old misalignment, and your saved value survives a re-paste.
 
 ## v4.6.1 — 2026-08-12
 
-## Read this first
+**No dotted line next to one of Nexus's own levels unless it sweeps all three columns.** A line one strike off a wall reads as a second wall, and at 2 of 3 it usually isn't one — it's the shoulder of the wall's own concentration.
 
-**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
-**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.6.1.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
+**Nexus's own levels never get a dotted line**, on any chain. The "is this the same level" test was a fixed distance in price, which worked on a $1 chain and was far too tight on SPX's $5 one; it's measured in strikes now.
 
-**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
-`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
-**dashboard.nexusfutures.net** and **tradingview.com**.
-
-**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
-**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
-repeat step 1.
-
-**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
-— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
-It is NOT part of the extension and never auto-updates.
-
-Requires Firefox 128+.
+**Fixed: on SPX and NDX, every strike drew a line.** Neighbours were found by looking up "the strike one dollar above and below", which assumes a $1 chain — on a $5 or $25 chain every lookup missed, a missing neighbour counted as beaten, and so every strike scored a phantom 3 of 3. It also misfired on a $1 chain anywhere the table skipped a strike. Neighbours are now the rows actually either side, whatever the spacing.
 
 ## v4.6.0 — 2026-08-12
 
-## Read this first
+**Dotted lines are decided differently.** A strike now earns one by out-doing *both* of its immediate neighbours on at least **two of the three columns** — of the six comparisons (score, OI and GEX against the strike above and the strike below), four have to go its way, and they have to make up two whole columns.
 
-**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
-**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.6.0.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
+Score is no longer a benchmark on its own. Before, a score of 30+ drew a line unaided while OI and GEX had no say, so a lone score bump got a line and genuinely concentrated strikes went bare. Score is now one of three equal votes, with a floor of **20** — there to keep noise out, not to confer significance.
 
-**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
-`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
-**dashboard.nexusfutures.net** and **tradingview.com**.
+When more than five strikes qualify, the ones sweeping all **3 of 3** columns go first, then whichever tops a column outright, then score, then proximity to price.
 
-**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
-**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
-repeat step 1.
-
-**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
-— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
-It is NOT part of the extension and never auto-updates.
-
-Requires Firefox 128+.
+**And it won't leave you with an empty chart.** The bar steps down until something qualifies — first the score floor is dropped, then the two-column requirement, and on a genuinely flat board it draws the single highest score. The console says which step produced the lines, so a thin day is distinguishable from a broken read.
 
 ## v4.5.3 — 2026-08-12
 
-## Read this first
-
-**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
-**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.5.3.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
-
-**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
-`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
-**dashboard.nexusfutures.net** and **tradingview.com**.
-
-**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
-**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
-repeat step 1.
-
-**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
-— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
-It is NOT part of the extension and never auto-updates.
-
-Requires Firefox 128+.
+**The brightness slider runs the other way** — left fades the overlay out, right pushes it toward solid. Same control, same centre, just the direction that matches how you read it. Your saved setting carries over unchanged; the flip happens between the slider and storage, so the indicator's own input keeps its original meaning and a chart you haven't re-pasted still behaves.
 
 ## v4.5.2 — 2026-08-12
 
-## Read this first
+**A sync that couldn't read your Nexus tab wasted three and a half seconds finding out.** The in-place read polls for a few seconds on purpose — Nexus is a single-page app, and on a tab that's mid-load the export panel hasn't appeared yet, so that patience is what makes the usual sync take about two seconds. The cost was that a tab which could *never* answer burned the whole budget before falling back to a reload.
 
-**1. Install (Firefox).** Open this page **in Firefox**, then under **Assets** click
-**`1-FIREFOX-SETUP-nexus-tv-bridge-v4.5.2.xpi`** → **Add**. Ignore "Source code" — that's not the extension.
+There's now a ~50ms check first. If the page has settled and has no export panel, polling can't help, so the reload starts immediately. If it's still loading, the wait still applies. The check only reads state; it doesn't click or navigate anything.
 
-**2. Grant host permissions — or nothing works.** Firefox treats them as optional:
-`about:addons` → Nexus → TradingView Bridge → **Permissions** → enable
-**dashboard.nexusfutures.net** and **tradingview.com**.
-
-**3. Turn on automatic updates.** `about:addons` → Nexus → TradingView Bridge → the
-**...** menu → **Allow Automatic Updates** on. Firefox then checks daily and you never
-repeat step 1.
-
-**4. Pine indicator:** [nexus-strike-metrics.pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/nexus-strike-metrics.pine)
-— copy it into TradingView's Pine Editor, Ctrl+S, Add to chart once, then Ctrl+S again to save the layout.
-It is NOT part of the extension and never auto-updates.
-
-Requires Firefox 128+.
+**Nothing waits longer than two seconds before reloading.** Past two seconds a tab isn't slow, it's stuck. The read that happens *after* a reload keeps its longer budget deliberately — a page that's actively loading will finish.
 
 ## v4.5.1 — 2026-08-12
 
