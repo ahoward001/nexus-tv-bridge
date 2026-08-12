@@ -6,6 +6,62 @@ Newest first.
 
 ---
 
+## v4.5.1 — 2026-08-12
+
+⚠️ **Re-paste the Pine script** — indicator-only change.
+
+**GEX spacing, split the difference.** 4.5.0 pulled the GEX column in by 15% of the column gap and that overshot; it's 8% now, which lands it one bar in rather than two at typical spacing. Still a fraction of the spacing rather than a fixed number, so the spacing slider continues to move all three columns together.
+
+### From 4.4.5
+
+**The GEX column sits a hair closer**, correcting the same visual imbalance Score got in 4.4.0 — OI's labels are wide, so the gap before GEX read larger than the one before it. Both nudges are fractions of the column spacing, so your spacing slider still moves all three together.
+
+### From 4.4.4
+
+**The Score / OI / GEX columns could silently stop updating mid-session** — a sync that reloaded Nexus and got back an unchanged export kept the older read, whose spot price came from a frozen tab. The freshness check then compared today's strike data against a stale price and discarded the fresh half.
+
+### From 4.4.3
+
+**A sync could never reload Nexus if your dashboard lived in a second window** — selecting a tab only brings it forward within its own window, so the page stayed hidden and unreadable. It now raises the window and hands focus back to the chart.
+
+**The feed clock could read five hours stale**, because Nexus renders that stamp in UTC before the page settles and in your own timezone afterwards.
+
+**Two installed copies no longer fight** over the same Nexus tab.
+
+### Recent
+
+**4.4.1** — fixed a 14-second sync: a check added in 4.3.3 clicked TradingView's Overview nav to test whether the strike table was readable, which navigated the Nexus tab off the Export view and broke the *next* sync.
+
+**4.4.0** — brightness slider; the Score column sits a quarter-gap closer so the three columns look evenly spaced.
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.5.0 — 2026-08-12
 
 ⚠️ **Re-paste the Pine script** — the indicator changed again. This covers 4.4.5's spacing fix too, so one paste gets both.
