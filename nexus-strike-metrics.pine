@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.6.4
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.7.0
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -88,10 +88,15 @@ SCORE_NUDGE = 0.25
 // Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
 // instead of drifting out of proportion when you widen the columns.
 GEX_NUDGE = -0.08
-// Whole bars, not a fraction: this one is compensating for the centred anchor above
-// (a centred narrow box sits half its width left of where a corner-anchored one would),
-// which is a fixed pixel effect rather than something that scales with column spacing.
-SCORE_BUMP = 2
+// Whole bars, not a fraction: this is compensating for a fixed pixel effect (label width),
+// not for anything that scales with column spacing.
+//
+// The score bubble keeps the SAME pointer as OI and GEX — bottom-left corner — so all three
+// look alike; only its POSITION is nudged. It was briefly centred (4.6.3) to line it up with
+// its header, but that changed the shape of the pointer too, which was not the ask. Dropped
+// from 2 bars to 1 because a corner-anchored box sits about half its own width right of
+// where a centred one does, and the score box is only one or two characters wide.
+SCORE_BUMP = 1
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
@@ -361,7 +366,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                             // one off closes the gap instead of leaving a blank lane.
                             slot = 0
                             if showScore
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, true)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, false)
                                 slot += 1
                             if showOi
                                 drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz, false)
