@@ -6,6 +6,22 @@ Newest first.
 
 ---
 
+## v4.7.0 — 2026-08-13
+
+⚠️ **Re-paste the Pine script** — the indicator changed too.
+
+**"Nexus already draws this" now tracks the export, not the dashboard cards.** Your chart is drawn from the export code; the cards are live and run ahead of it. So the moment a wall moved, the cards called the new strike a wall while the indicator was still drawing the old one — and the new strike got skipped for a line that didn't exist. Caught live: **730 scoring 82, with the biggest OI and the biggest GEX on the board, carrying no line from anyone** until the export caught up minutes later.
+
+The export code's hash changes exactly when Nexus publishes a new batch, so the wall values are now snapshotted at that instant and that snapshot decides what counts as already-drawn. It updates the moment the export does, and it never claims a level the batch hasn't published. When the cards have moved on since the batch, the console says so and names the levels.
+
+**The Score bubble's pointer is back at the bottom-left corner**, matching OI and GEX. Only its position is nudged; 4.6.3 had centred it to line it up with its header, which changed the pointer's shape as a side effect. The box stays where it was.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.6.4 — 2026-08-13
 
 **A major level could end up with no line from anyone.** Skipping levels Nexus already draws assumed the chart has a line there — but your chart is drawn from the **export code**, while "Nexus already draws this" was read from the dashboard **cards**. The cards lead and the export lags, so the moment a wall moves, the cards call the new strike a wall while the indicator is still drawing the old one. We'd skip the new strike for a line that doesn't exist yet.
