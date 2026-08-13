@@ -6,6 +6,24 @@ Newest first.
 
 ---
 
+## v4.9.0 — 2026-08-13
+
+**The indicator now ships inside the extension, with a copy button.**
+
+The Pine script lives in TradingView, not in the extension, so nothing can install or update it for you — on any browser. But fetching it was the awkward part: a Store install arrived with no script and a link to go find one, which is the single step setup couldn't help with.
+
+Settings now has an **indicator** section at the top with the script bundled in, the version it matches, and one button that puts it on your clipboard. Then it's paste, save, add to chart, save the layout. The instructions are on the page, including the trap where the editor says *"this is a historical version of the script"* — that state is read-only and pasting into it silently does nothing.
+
+The copy is guaranteed to match the build you're running, because it's the same file the extension ships. No more wondering whether the script on your chart is older than the extension driving it.
+
+**The Store build no longer strips it.** It was excluded to keep the package small, which meant Store users were the ones who most needed the GitHub link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.8.1 — 2026-08-13
 
 Indicator only. **You do not need to re-paste for this one** unless you want the shipped script to match — the change is a default, and any value you have saved wins over it.
