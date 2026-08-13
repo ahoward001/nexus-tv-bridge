@@ -6,6 +6,24 @@ Newest first.
 
 ---
 
+## v4.8.0 — 2026-08-13
+
+Extension only — no Pine change, nothing to re-paste.
+
+**Price alerts now name levels that are actually on your chart.** They were armed from the dashboard cards, which run ahead of the export your chart is drawn from — so an alert could warn about a Call Wall that existed on the dashboard and nowhere on your screen. They're armed from the same batch snapshot the dotted lines use, so an alert can only ever mention a level you can see.
+
+**An alert never says "approaching" about a level price has left.** Entries are held through the quiet window on purpose, and with one-minute sampling a fast move straight through a band registers as an entry at the far side of it — so a notification could arrive announcing a level price was already well past and still leaving. An entry is now dropped if price is outside the zone *and* further from it than when it was detected. A level price came back toward still sends.
+
+**Clustered levels show their prices.** When two levels sit within a strike of each other they're merged into one line, and that line was printing the word "cluster" instead of the price — "Gamma Flip + Call Wall cluster · 0.90 away", with no number to reconcile against the chart. It shows the range now.
+
+**Removed the score-50 line override** added in 4.6.4. It dated from before the "already drawn" rule was anchored to the export; with that fixed, a big score satisfies the ordinary conditions on its own, and two rules doing one job just makes the behaviour harder to reason about.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.7.0 — 2026-08-13
 
 ⚠️ **Re-paste the Pine script** — the indicator changed too.
