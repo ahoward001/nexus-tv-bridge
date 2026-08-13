@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.8.0
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.8.1
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -149,10 +149,11 @@ showTitle = input.bool(true, "Show header row", group = "Colors")
 hdrGapPct = input.float(6.5, "Header gap (% of range)", minval = 1.0, maxval = 25.0, step = 0.5, group = "Colors",
      tooltip = "Vertical distance from the top level up to the header row, as a % of the drawn price range. " +
      "Lower = headers sit closer to the levels.")
-hdrShift  = input.float(2.0, "Header nudge (bars)", minval = -10, maxval = 10, step = 0.5, group = "Colors",
+hdrShift  = input.float(2.33, "Header nudge (bars)", minval = -10, maxval = 10, step = 0.1, group = "Colors",
      tooltip = "Headers use a straight-DOWN tail, which centres the chip on its anchor, while the data " +
      "bubbles anchor a corner. This nudges the header right so it sits over its column. Pine can't measure " +
-     "label width, so tune this by eye if your label size or font changes.")
+     "label width, so tune this by eye if your label size or font changes. 2.33 is what looked " +
+     "right at Normal size; the stepper moves in 0.1 but you can type any value.")
 colHdrBg  = input.color(#525762, "Header bar", group = "Colors")
 colHdrTx  = input.color(#aae28d, "Header text", group = "Colors")
 
