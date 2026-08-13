@@ -6,6 +6,25 @@ Newest first.
 
 ---
 
+## v4.6.4 — 2026-08-13
+
+**A major level could end up with no line from anyone.** Skipping levels Nexus already draws assumed the chart has a line there — but your chart is drawn from the **export code**, while "Nexus already draws this" was read from the dashboard **cards**. The cards lead and the export lags, so the moment a wall moves, the cards call the new strike a wall while the indicator is still drawing the old one. We'd skip the new strike for a line that doesn't exist yet.
+
+Caught live: **730 scoring 82 with the biggest OI and biggest GEX on the board, maxed on both heat scales, and not a line from anyone** until the export caught up minutes later.
+
+Two guarantees now override the skip:
+
+- **A 3-of-3 sweep always draws**, even on an exported level. It's the most concentrated strike in the band; a dotted line over a wall band is a small cost, a missing line on the day's biggest level is not.
+- **Any score of 50 or more always draws** — the same bar the price alerts use. A level can carry a monster score while one neighbour edges it on OI, and that shouldn't cost it a line.
+
+Neither can be squeezed out by the five-line cap; they sort first.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.6.3 — 2026-08-12
 
 ⚠️ **Re-paste the Pine script** — indicator-only.
