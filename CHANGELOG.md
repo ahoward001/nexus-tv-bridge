@@ -6,6 +6,22 @@ Newest first.
 
 ---
 
+## v4.8.1 — 2026-08-13
+
+Indicator only. **You do not need to re-paste for this one** unless you want the shipped script to match — the change is a default, and any value you have saved wins over it.
+
+**The column titles sit a little further right by default** — "Header nudge (bars)" goes from 2.0 to **2.33**, which is where they read as centred over their bubbles at Normal label size.
+
+The stepper moves in **0.1** now instead of 0.5, because 0.5 couldn't reach the value that actually looked right. You can type any value into the field regardless of the step.
+
+Why this is tuned by eye rather than computed: the header chips are centred on their anchor while the bubbles hang from a corner, and Pine has no way to measure label width — so the right offset depends on how wide the numbers happen to be and on your label size.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.8.0 — 2026-08-13
 
 Extension only — no Pine change, nothing to re-paste.
