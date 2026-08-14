@@ -6,6 +6,24 @@ Newest first.
 
 ---
 
+## v4.15.1 — 2026-08-14
+
+**The panel shows the regime again, and the age instead of a clock time.**
+
+4.13.0 replaced the ticker with a regime label, but it read the positioning metric as if it were a plain number when it's actually an object — so the label silently never appeared and the line showed only a timestamp. It now reads:
+
+```
+POSITIVE · 1m
+```
+
+The regime lean, and how old the data is — which is the form that was wanted; the absolute clock time was my misreading of "timestamp".
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.15.0 — 2026-08-14
 
 **The indicator can now set itself up.** One button, about ten seconds, instead of copy-paste-save-add-save.
