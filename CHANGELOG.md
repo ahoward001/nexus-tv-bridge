@@ -6,6 +6,20 @@ Newest first.
 
 ---
 
+## v4.15.2 — 2026-08-14
+
+**The update prompt now fires only when the indicator actually changed.**
+
+It compared version numbers — but every release stamps a new version into the Pine header whether or not a line of the script changed. The script is byte-identical between 4.9.0 and 4.15.1 apart from that stamp, so the prompt would have offered an "update" that changed nothing, on every release.
+
+It now fingerprints the script's code with the stamp line excluded, so a release that doesn't touch the indicator stays silent — which is what "relevant patches only" has to mean.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.15.1 — 2026-08-14
 
 **The panel shows the regime again, and the age instead of a clock time.**
