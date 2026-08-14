@@ -6,6 +6,31 @@ Newest first.
 
 ---
 
+## v4.15.0 — 2026-08-14
+
+**The indicator can now set itself up.** One button, about ten seconds, instead of copy-paste-save-add-save.
+
+When a chart doesn't have **Nexus Strike Metrics** on it, a card offers to set it up. When a chart has an older version *that the extension installed*, it offers to update. Both always include **Copy the script** as the escape hatch, and **Not now** to be left alone.
+
+**Setting up and updating are deliberately different operations.** Setting up pastes the source, saves, and adds the indicator exactly once. Updating pastes over the existing script and saves — and *never* adds, because saving already applies the new source to the indicator on your chart. That's what keeps your tuned settings: a fresh add would come back with code defaults.
+
+Everything it does, it checks:
+
+- It reads the **chart legend**, not the editor's "Add to chart" button — that button silently reverts after a page reload and is a large part of why duplicate indicators happen.
+- It counts legend **rows** and compares names by prefix, because duplicates share a name and differ only by a version suffix.
+- It **refuses to act on a chart that already has two**, and tells you to remove one by hand. It never removes an indicator for you.
+- It verifies the paste actually **replaced** the file rather than appending to it, by checking the version stamp at the top.
+- It won't paste into a **read-only historical version** of the script, where pastes fail silently — it tells you to reload, which clears it.
+- It refuses to run when the editor isn't rendering, since it could act but not verify.
+- It saves the layout only with **both** Nexus indicators present.
+- It prompts once per chart per version. Never during a sync.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.14.0 — 2026-08-14
 
 **Groundwork for setting up the indicator automatically — detection only, nothing acts on it yet.**
