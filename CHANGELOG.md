@@ -6,6 +6,22 @@ Newest first.
 
 ---
 
+## v4.12.0 — 2026-08-14
+
+**New setting: "Include odd strikes that only appear near expiry."** Off by default.
+
+4.11.0 started ignoring QQQ's half-dollar strikes entirely — they exist only on the nearest **Friday** expiries, seven per expiry every $5 around spot, and they were wedging a row between every dollar level while quietly halving the price-alert band on those days.
+
+Off is right for most people. But they are real contracts, and on a **Friday 0DTE** they can carry real gamma — so if you trade that, the switch puts them back everywhere at once: drawn, and counted toward lines, proximity and alerts.
+
+The filter still only applies where the dominant grid is a dollar or more, so a ticker whose chain is genuinely half-dollar keeps its whole board either way.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.11.0 — 2026-08-14
 
 **Half-dollar strikes are ignored completely** — not drawn, and not counted toward lines, proximity or alerts.
