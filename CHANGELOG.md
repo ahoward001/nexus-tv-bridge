@@ -6,6 +6,24 @@ Newest first.
 
 ---
 
+## v4.13.0 — 2026-08-14
+
+**Dotted lines were effectively dead on NDX and thin on SPX.** The "how far from price do we look" setting is written in *strikes* — but it was being compared against a raw price distance. Ten points on NDX, where strikes are 25 apart, admits a single strike, so there was almost nothing to choose lines from. It now multiplies by what a strike is actually worth on that chart: ±10 points on QQQ, ±50 on SPX, ±250 on NDX — ten strikes in every case. QQQ is unchanged.
+
+**The lingering panel says something more useful.** It read `QQQ · 1m` — but you know which chart you're on, and a relative age is only right for about a minute and then quietly goes stale while the panel sits there. It now reads:
+
+```
+NEGATIVE · 12:36 PM
+```
+
+The regime lean, and the clock time the data was actually published. The ticker is still in the hover, along with everything else.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.12.1 — 2026-08-14
 
 **Two fixes for charts that aren't QQQ.**
