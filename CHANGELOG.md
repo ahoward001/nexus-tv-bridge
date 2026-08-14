@@ -6,6 +6,27 @@ Newest first.
 
 ---
 
+## v4.10.0 — 2026-08-14
+
+**The hover now confirms both writes separately.** A sync does two independent things — it pastes Nexus's levels, and it fills the Score / OI / GEX columns — from two different reads that can succeed or fail on their own. The hover only ever reported the levels, so "applied" told you nothing about whether the columns had updated, which is exactly the ambiguity that let stale columns sit there looking current.
+
+It now reads:
+
+```
+Last sync 8:56 AM (just now)
+QQQ · applied — new levels
+Levels posted 8:55 AM (1m old at sync)
+Strike metrics 8:56 AM · 27 strikes · verified
+```
+
+And when the columns *didn't* update it says so, with the reason — "couldn't read the strike table", "strike read looked stale", or "off in settings" — instead of staying silent.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.9.0 — 2026-08-13
 
 **The indicator now ships inside the extension, with a copy button.**
