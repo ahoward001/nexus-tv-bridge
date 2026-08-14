@@ -6,6 +6,18 @@ Newest first.
 
 ---
 
+## v4.13.1 — 2026-08-14
+
+**Strike spacing is now measured rather than looked up.** The last hardcoded assumption: a small table said SPX was 5, NDX was 25, and everything else was 1 — fine for the majors, a guess for GLD, USO, IBIT, ETHA and anything added later.
+
+Every sync that reads the strike grid now learns the real spacing for that ticker from the rows themselves and remembers it, so the guess is replaced by a measurement the first time you sync. The table survives only as a first-sync fallback, and the console says when a measurement disagrees with it.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.13.0 — 2026-08-14
 
 **Dotted lines were effectively dead on NDX and thin on SPX.** The "how far from price do we look" setting is written in *strikes* — but it was being compared against a raw price distance. Ten points on NDX, where strikes are 25 apart, admits a single strike, so there was almost nothing to choose lines from. It now multiplies by what a strike is actually worth on that chart: ±10 points on QQQ, ±50 on SPX, ±250 on NDX — ten strikes in every case. QQQ is unchanged.
