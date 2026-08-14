@@ -6,6 +6,20 @@ Newest first.
 
 ---
 
+## v4.12.1 — 2026-08-14
+
+**Two fixes for charts that aren't QQQ.**
+
+**The columns never drew on NDX.** The check that asks "is this strike data centred where price actually is?" used a flat $2 tolerance — sensible on QQQ at ~$730 with $1 strikes, meaningless on NDX at ~30,000 with 25-point strikes, where a 2.7-point difference is 0.009%. It tripped on every sync, so the Score / OI / GEX columns were rejected as stale every time. The tolerance now scales with the instrument's own strike width.
+
+**Switching ticker opened an unnecessary tab.** When your Nexus tab is on QQQ and the chart is NDX, the extension navigates that tab to the new ticker — a full page load of a ~3MB app, not a quick reload. It was only given the two seconds a reload needs, the read came back empty, and the sync fell through to opening a throwaway tab. A ticker change now gets the time a navigation actually takes; same-URL reloads are unchanged and still fast.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.12.0 — 2026-08-14
 
 **New setting: "Include odd strikes that only appear near expiry."** Off by default.
