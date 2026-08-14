@@ -6,6 +6,24 @@ Newest first.
 
 ---
 
+## v4.11.0 — 2026-08-14
+
+**Half-dollar strikes are ignored completely** — not drawn, and not counted toward lines, proximity or alerts.
+
+QQQ lists $0.50 strikes, but only on the nearest **Friday** expiries: seven of them, every $5 around spot. Monday through Thursday have none, and expiries a few weeks out have none yet. They're real contracts, they just aren't part of the grid you trade — and with open interest in the dozens they were adding a cluttered row between every dollar level.
+
+**They were also breaking price alerts, one day a week.** The extension learns "what is a strike on this ticker" from the gaps between rows, taking the smallest — so a single 732.5 convinced it QQQ trades on a $0.50 grid. A red zone set to 1 strike became ±$0.50, and the re-alert distance halved with it. Every Friday, silently, since whenever Nexus first published one.
+
+They're filtered at the source now, upstream of drawing, line selection, the session colour range and alert arming, so nothing downstream can see them.
+
+**Tickers whose chain is genuinely half-dollar are unaffected.** The filter only applies when the dominant gap is a dollar or more, so a $14 ETF listing every $0.50 keeps its whole board.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.10.0 — 2026-08-14
 
 **The hover now confirms both writes separately.** A sync does two independent things — it pastes Nexus's levels, and it fills the Score / OI / GEX columns — from two different reads that can succeed or fail on their own. The hover only ever reported the levels, so "applied" told you nothing about whether the columns had updated, which is exactly the ambiguity that let stale columns sit there looking current.
