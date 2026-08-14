@@ -6,6 +6,22 @@ Newest first.
 
 ---
 
+## v4.14.0 — 2026-08-14
+
+**Groundwork for setting up the indicator automatically — detection only, nothing acts on it yet.**
+
+The extension can now tell what state the Pine indicator is in on a chart: **missing**, **installed**, or **duplicated**. It logs that and does nothing else — no clicking, no prompts, no opening the editor.
+
+That restraint is the point. Detection got this wrong twice during development: a name-based counter reported "no duplicate" while two instances were sitting on the chart, because duplicates share a name and differ only by a version suffix (`Nexus Strike Metrics · 46.0` vs `· 45.0`). It counts legend rows now and compares on the name prefix. It also ignores the editor's "Add to chart / Update on chart" button, which looks like a state signal but silently expires on page reload — and is very likely how duplicate indicators get created in the first place.
+
+Nothing gets built on top of this until it's been proven right on real charts.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.13.1 — 2026-08-14
 
 **Strike spacing is now measured rather than looked up.** The last hardcoded assumption: a small table said SPX was 5, NDX was 25, and everything else was 1 — fine for the majors, a guess for GLD, USO, IBIT, ETHA and anything added later.
