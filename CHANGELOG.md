@@ -6,6 +6,31 @@ Newest first.
 
 ---
 
+## v4.16.0 — 2026-08-17
+
+**Alert quiet-time is now a four-way choice, and it reads the page instead of the tab bar.**
+
+The old rule was a checkbox — "only alert when I'm not looking at that chart" — and it decided by asking whether the tab was active in the frontmost window. That counted you as watching while the chart sat completely hidden behind fullscreen DevTools, so a genuine first touch of a level was detected and then silently thrown away.
+
+**When should alerts stay quiet?**
+
+- **Always notify me**
+- **Quiet only while I'm focused on that chart** — the new default
+- **Quiet whenever that chart is on screen**
+- **Never notify me**
+
+"Focused" now means the chart itself holds the keyboard, so a chart behind DevTools or a background window counts as *not* focused and still alerts. "On screen" is the stricter reading for people who genuinely watch one chart all day.
+
+**A suppressed touch is recorded rather than discarded.** Hover the sync button and it tells you what was silenced, when, and why — so a quiet alert can never again be mistaken for a broken one.
+
+Your existing setting is carried over: the old checkbox becomes "quiet only while I'm focused".
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.15.3 — 2026-08-17
 
 **A quiet price alert now says why it was quiet.**
