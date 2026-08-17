@@ -6,6 +6,56 @@ Newest first.
 
 ---
 
+## v4.18.0 — 2026-08-17
+
+**Setup now fixes a read-only script instead of giving up on it.**
+
+TradingView leaves the Pine editor pinned to whichever version of a script you last looked at, and that view is read-only — pasting into it does nothing at all, silently. That state is sticky, lives on your account rather than in the browser, and survives new charts, new layouts and cleared cookies. It is a completely ordinary state to be in.
+
+Until now the installer detected it and stopped. It now clears it: restores the pinned version so the script becomes editable, then pastes the current source over it and saves. The script ends up holding exactly what it should; the restore is just an extra entry in the version history.
+
+The restore link is one of TradingView's controls that ignores a scripted click, so it goes through the React handler directly — the same approach used elsewhere in the extension for controls that refuse synthetic events.
+
+**If anything fails after the restore**, it says so specifically — that the script is currently holding old code and needs the paste, with the source already on your clipboard — rather than leaving you to work out why the indicator looks wrong.
+
+### Recent
+
+**v4.17.0** — Setup failed against a read-only script, and gave up too quickly
+
+**v4.16.0** — Alert quiet-time is now a four-way choice, and it reads the page instead of the tab bar
+
+**v4.15.3** — A quiet price alert now says why it was quiet
+
+**v4.15.2** — The update prompt now fires only when the indicator actually changed
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.17.0 — 2026-08-17
 
 **Setup failed against a read-only script, and gave up too quickly.**
