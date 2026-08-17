@@ -6,6 +6,25 @@ Newest first.
 
 ---
 
+## v4.15.3 — 2026-08-17
+
+**A quiet price alert now says why it was quiet.**
+
+Silence had several legitimate causes — price already sitting inside a level's zone (the rule that stops a level you're hovering from nagging), the quiet window, or you being on that chart — and none of them were distinguishable from "the alerts are broken".
+
+Once a minute per symbol, the console now names the nearest level, the distance, the band, and the reason:
+
+```
+price-alerts: QQQ 734.58 — nearest Vanna Flip 734.29 (0.29 away, band 1.00)
+  — already inside the zone, so no NEW entry to report (it re-arms once price clears it)
+```
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.15.2 — 2026-08-14
 
 **The update prompt now fires only when the indicator actually changed.**
