@@ -6,6 +6,68 @@ Newest first.
 
 ---
 
+## v4.19.2 — 2026-08-18
+
+**Setting the indicator up now works, and stops quitting on things it merely couldn't check.**
+
+Every keyboard shortcut the installer sent TradingView was silently doing nothing. Monaco — the editor behind the Pine window — reads the deprecated numeric `keyCode`, and the browser refuses to set that when an event is built in code: it always arrives as zero, so every shortcut resolved to "no key pressed". Two things followed from that one bug. Select-all never selected, so each paste *inserted* rather than replaced, leaving TradingView's starter script sitting underneath your code where it would never compile. And scroll-to-top never scrolled, so the version stamp on line 3 was never on screen to be read — which the installer then reported as a failure and gave up on. The same call also held Ctrl and Cmd down together, which is a third shortcut bound to nothing at all.
+
+**No version check can end a run any more.** Not seeing the version it expected means it could not *confirm* — which is not the same as knowing something failed. It now says so and carries on, as it does for a save it couldn't watch complete, and for an editor pinned to an old version that wouldn't unpin (it pastes anyway rather than refusing in advance). Two things still stop it, and neither is about version numbers: TradingView's starter script still sitting in the buffer after a paste, and more than one copy of the indicator on the chart. Those are facts read off the page, and carrying on past either one damages something. Any run that ends less than clean now puts the script on your clipboard automatically, so doing it by hand is one paste away.
+
+**Saving a brand-new script no longer stalls on its name.** A script you've saved before saves silently; one you haven't puts up "Save script — new script name" and waits. Setup always begins in a fresh untitled script, so it always met that dialog, and then sat watching a Save button that a waiting dialog was never going to release. It fills the dialog in and confirms it. If TradingView adds a number to the name because it's taken, it tells you — that means an older copy is still sitting in your Pine list.
+
+**"Settings didn't reach the chart" now comes with the fix attached.** That notification used to end on "check the indicator is on the chart", which is the extension telling you to go and do the one thing it can do for you. It now reads the chart legend and offers the right action: **Set it up** when Nexus Strike Metrics isn't there, **Update it** when it is but is an older build whose inputs don't match. If there's more than one copy on the chart it says that plainly instead, because that's also a reason settings stop landing and it isn't something the extension will fix on its own.
+
+**Three buttons in Settings**, where there was one: **Write the script** for a chart that hasn't got it, **Update the script** for one that has — which keeps the inputs you've tuned — and **Copy the script** for doing it by hand. Write and Update stay separate on purpose: the difference between adding and pasting over is the difference between one copy of the indicator and two. Both drive your open chart, bringing that tab to the front, and report progress on the chart itself.
+
+**The floating panel says NEG GEX or POS GEX**, in a light red or green, instead of an uncoloured "NEGATIVE". The age keeps its own freshness colour beside it.
+
+**Settings are in a usable order.** Placement moved up beneath the column checkboxes, next to the Levels controls it works with. The Nexus reload timing and the notification auto-delete moved down out of the way. The indicator box moved to the bottom, since it's the thing you touch once.
+
+**The amber on/off switch is gone.** It gated the whole staleness watcher, including the orange "a sync will move lines" state — so turning it off made the button lie to you. In its place: when the extension **can't tell** whether your levels have moved, either go yellow (more cautious) or stay green (less distracting). Orange and the market-closed clock are unaffected either way. If you had amber switched off, you're moved to green, which is what you were asking for.
+
+**"Strike metrics didn't update" now offers to fix it.** That warning fires when the columns can't be written — most often because Nexus Strike Metrics isn't on the chart at all. It said so and left you to sort it out. It now reads the chart legend and offers the right action, the same as the other settings warnings do. It stays quiet for failures that re-pasting the script wouldn't fix — a dialog that wouldn't open, a timeout, a logged-out Nexus — so it only speaks up when there is something to press.
+
+**The install links on this page never go stale again.** The Firefox button used to point at *this release's* file, so an old page — or an old link someone saved — installed an old build with nothing to indicate it. Every release now also carries two fixed-name copies, `nexus-tv-bridge-latest.xpi` and `nexus-tradingview-bridge-latest.zip`, and the button points at those through GitHub's "latest" path. Any link to it, from any version, lands on the current build.
+
+### Recent
+
+**v4.18.0** — Setup now fixes a read-only script instead of giving up on it
+
+**v4.17.0** — Setup failed against a read-only script, and gave up too quickly
+
+**v4.16.0** — Alert quiet-time is now a four-way choice, and it reads the page instead of the tab bar
+
+**v4.15.3** — A quiet price alert now says why it was quiet
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.18.0 — 2026-08-17
 
 **Setup now fixes a read-only script instead of giving up on it.**
