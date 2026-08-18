@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 4.18.0
+// Nexus Strike Metrics for Nexus → TradingView Bridge 4.19.2
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
