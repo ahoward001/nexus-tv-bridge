@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v4.19.5 — 2026-08-19
+
+**Setup could never finish on the one chart it exists for — an empty Pine editor.**
+
+Before touching anything, the installer waits for the editor to be usable. It decided that by counting rendered lines of code. A brand-new Pine script is **empty**, so there are none — and filling it is the whole job. That check could never pass on a fresh editor, so setup waited twelve seconds and then stopped with *"the editor didn't render — bring this tab to the front and retry"*, on a tab that was already in front and an editor that was working perfectly.
+
+This was checked against a live chart rather than guessed at: the editor measured 655×694 with a working text area and a live **Add to chart** button, and the old test still read it as not rendered. It now looks for the things that make an editor usable — a visible box, the text area TradingView routes typing through, and the container code is drawn into — instead of demanding that code already be there.
+
+**Also:** the button that puts the script on the chart is labelled **Add to chart** or **Update on chart** depending on whether that script has ever been applied before. Only the first was recognised, so a script you had previously used stopped the run with *"no Add to chart button"* while the button sat there reading *Update on chart*. Both are accepted now. What actually confirms success is unchanged and unchanged on purpose: exactly one copy of the indicator in the chart legend afterwards, or it stops and tells you.
+
+### Recent
+
+**v4.19.4** — "No Add to chart button" — on a chart where the button was plainly sitting there
+
+**v4.19.3** — Setting up the indicator from Settings, or from a warning, failed instantly and said nothing useful
+
+**v4.19.2** — Setting the indicator up now works, and stops quitting on things it merely couldn't check
+
+**v4.18.0** — Setup now fixes a read-only script instead of giving up on it
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.19.4 — 2026-08-19
 
 **"No Add to chart button" — on a chart where the button was plainly sitting there.**
