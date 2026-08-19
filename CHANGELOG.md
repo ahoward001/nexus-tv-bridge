@@ -6,6 +6,58 @@ Newest first.
 
 ---
 
+## v4.19.4 — 2026-08-19
+
+**"No Add to chart button" — on a chart where the button was plainly sitting there.**
+
+The installer looked for that control by one hardcoded attribute, `title="Add to chart"`. TradingView now draws it as an icon whose label lives in a floating tooltip, so that attribute is gone and the search matched nothing. Setup then stopped one step from done, having already pasted and saved the script correctly, and blamed a button it simply couldn't see.
+
+It now checks every place a label can hide — title, aria-label, tooltip attributes, the element's own name and its text — and looks inside the editor's own toolbar first so it can't click something unrelated. If none of that matches, it falls back to the keyboard shortcut the tooltip itself advertises, **⌘/Ctrl + Enter**. A shortcut can't be restyled or renamed out from under it the way a DOM element can. Either way the result is checked the same way as before: exactly one copy of the indicator in the chart legend, or it stops and says so.
+
+**The editor also wouldn't scroll to the top**, so the version stamp on line 3 was never on screen to verify. Monaco only accepts keys while its text area holds focus, and anything between the paste and the check — a dialog, a click, the tab coming forward — takes it. Focus is now reclaimed before the scroll keys are sent. This one was only ever a warning; it never stopped a run.
+
+**"The editor didn't render — bring this tab to the front" on a tab that was already in front.**
+
+A closed Pine panel was reporting itself as open. The check asked only whether the editor existed in the page, and TradingView keeps it there when the panel is collapsed — so setup never clicked to open it, then waited twelve seconds for a collapsed panel to draw text it was never going to draw, and blamed the tab. It now measures whether the editor is actually visible, and clicks the toggle a second time if the first click landed while the tab was still coming forward.
+
+### Recent
+
+**v4.19.3** — Setting up the indicator from Settings, or from a warning, failed instantly and said nothing useful
+
+**v4.19.2** — Setting the indicator up now works, and stops quitting on things it merely couldn't check
+
+**v4.18.0** — Setup now fixes a read-only script instead of giving up on it
+
+**v4.17.0** — Setup failed against a read-only script, and gave up too quickly
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.19.3 — 2026-08-19
 
 **Setting up the indicator from Settings, or from a warning, failed instantly and said nothing useful.**
