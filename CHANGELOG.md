@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v4.19.6 — 2026-08-19
+
+**A successful setup was reporting itself as a failure.**
+
+After adding the indicator, setup counts the entries in the chart legend to confirm exactly one copy landed. It did that while the Pine editor was still open — and TradingView doesn't draw legend rows while that panel covers them. So the count came back zero on a chart where the indicator had just been added successfully, and the run ended on *"expected exactly one instance after adding, found 0"*, sending you looking for a duplicate that never existed.
+
+This was watched happening on a live chart: the editor's own console logged **"Added to chart"**, the legend still read zero, and it read one the instant the panel closed. Setup now closes the editor first and counts afterwards.
+
+**The editor also closes when a run stops early.** It was only being closed after a clean finish, so anything that ended early left the panel sitting over half the chart with nothing to say it was done with it. Every path closes it now — success, warning, or failure.
+
+### Recent
+
+**v4.19.5** — Setup could never finish on the one chart it exists for — an empty Pine editor
+
+**v4.19.4** — "No Add to chart button" — on a chart where the button was plainly sitting there
+
+**v4.19.3** — Setting up the indicator from Settings, or from a warning, failed instantly and said nothing useful
+
+**v4.19.2** — Setting the indicator up now works, and stops quitting on things it merely couldn't check
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.19.5 — 2026-08-19
 
 **Setup could never finish on the one chart it exists for — an empty Pine editor.**
