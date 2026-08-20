@@ -1,6 +1,6 @@
 Nexus → TradingView Bridge — FIREFOX
 ====================================
-Version 4.19.11 — signed by Mozilla, installs permanently, updates itself.
+Version 4.19.12 — signed by Mozilla, installs permanently, updates itself.
 
 
 INSTALL — two clicks
