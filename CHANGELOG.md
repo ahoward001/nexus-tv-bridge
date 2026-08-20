@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v4.19.10 — 2026-08-20
+
+**Setup stops apologising for how it did the job.**
+
+Adding the indicator to the chart has two possible routes: pressing TradingView's button, or the keyboard shortcut that button advertises. The button was tried first — but its label changes depending on whether the script has been applied before, and it isn't drawn at all while the script is unsaved. So the usual sequence was: fail to find the button, quietly fall back to the shortcut, succeed, and then report *"couldn't find the Add to chart button, so the keyboard shortcut was used instead"*. Perfectly true, and of no use to anyone reading it.
+
+The shortcut is now simply how it's done. It can't be renamed or restyled out from under us, and it has worked every time. The button is still there as a second route if the shortcut doesn't take.
+
+**And when it finishes, it asks instead of explaining.** The card now stays for a minute and says *"Nexus Strike Metrics is on the chart — everything look ok?"*, with **Copy the script** if it isn't and **All good** to dismiss. That's the one question worth asking once the work is done, and the one useful thing to hand you if the answer is no.
+
+### Recent
+
+**v4.19.9** — "Expected exactly one instance after adding, found 0" — on a chart where it had plainly just been added
+
+**v4.19.8** — Setup could save and add an empty script
+
+**v4.19.7** — Setup no longer hangs on TradingView's "save before adding" question, and no longer refuses to do the obvious thing
+
+**v4.19.6** — A successful setup was reporting itself as a failure
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.19.9 — 2026-08-20
 
 **"Expected exactly one instance after adding, found 0" — on a chart where it had plainly just been added.**
