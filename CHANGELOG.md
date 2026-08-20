@@ -6,6 +6,60 @@ Newest first.
 
 ---
 
+## v5.0.0.0 — 2026-08-20
+
+**The indicator now sets itself up, and fixes itself when something is wrong.**
+
+Getting **Nexus Strike Metrics** onto a chart used to be yours to do: open the Pine Editor, select all, paste, save, add to chart, save the layout. Miss a step and the columns quietly showed yesterday's numbers. This release does the whole thing, and — more usefully — notices when it needs doing.
+
+**It offers when it matters.** If a sync can't fill the columns because the indicator isn't on the chart, or because it's an older build whose inputs don't match, the warning now comes with the fix attached: **Set it up** or **Update it**, chosen by reading your chart at the moment you press the button rather than when the message appeared. Update keeps every input you've tuned.
+
+**Three buttons in Settings** for doing it deliberately: **Write the script**, **Update the script**, and **Copy the script** for doing it by hand. Press the wrong one of the first two and it does the right thing anyway and tells you so.
+
+**It finishes the job.** The Pine editor closes when it's done, a sync runs so the levels and columns are actually filled, and a card lingers for a minute asking whether the chart looks right — with the script one click from your clipboard if it doesn't.
+
+**Yellow means something again.** The button stays quiet for ninety seconds after a sync, because clicking again inside that window returns the same batch Nexus already gave you. And a strike that newly earns a dotted line only raises a flag if it lands where you're trading: nearer to price than the Call Wall, Put Wall and Gamma Flip, or within two strikes outside one of them while price is pressed against that same wall.
+
+**Settings are in a usable order** — placement beside the levels controls it affects, the plumbing moved out of the way, the indicator box at the bottom. The amber on/off switch is gone; in its place, a straight choice about what happens when the extension *can't tell* whether your levels moved: go yellow, or stay green.
+
+**The panel reads NEG GEX or POS GEX**, in red or green, rather than an uncoloured "NEGATIVE".
+
+---
+
+*Version numbers gain a fourth position from here: `MAJOR.MINOR.PATCH.PINE`. The last one moves when the Pine script itself changes — the one part of this that nobody updates for you.*
+
+### Recent
+
+**v4.19.12** — A new dotted line now has to earn the interruption
+
+**v4.19.11** — The button turned yellow about five seconds after a clean sync
+
+**v4.19.10** — Setup stops apologising for how it did the job
+
+**v4.19.9** — "Expected exactly one instance after adding, found 0" — on a chart where it had plainly just been added
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v4.19.12 — 2026-08-20
 
 **A new dotted line now has to earn the interruption.**
