@@ -6,6 +6,56 @@ Newest first.
 
 ---
 
+## v4.19.8 — 2026-08-20
+
+**Setup could save and add an empty script.**
+
+When the paste failed to land, the run carried on regardless: it saved the empty editor, answered TradingView's *"Save this script before adding?"*, added nothing to the chart, and then failed its own final check with *"expected exactly one instance after adding, found 0"* — a message that reads like a duplicate problem when the real problem was that nothing had been pasted at all.
+
+That was a bad edge in an otherwise good rule. Not being able to read the version stamp is genuinely inconclusive and should only warn — an unread line says nothing about whether the paste worked. **No content at all is not inconclusive.** It is proof the paste didn't land, and it was being waved through under the same rule.
+
+Setup now checks the editor actually holds something before going any further. If it doesn't, it re-focuses and pastes once more, and if it is still empty it stops there — before saving anything, before adding anything — and tells you the script is on your clipboard and the editor is waiting.
+
+**Also fixed on the way:** the dialog matcher no longer treats any element mentioning "unsaved changes" as a window it should answer, and now requires an actual Save button before pressing anything.
+
+### Recent
+
+**v4.19.7** — Setup no longer hangs on TradingView's "save before adding" question, and no longer refuses to do the obvious thing
+
+**v4.19.6** — A successful setup was reporting itself as a failure
+
+**v4.19.5** — Setup could never finish on the one chart it exists for — an empty Pine editor
+
+**v4.19.4** — "No Add to chart button" — on a chart where the button was plainly sitting there
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
+---
+
+> ### ⚠️ The Pine indicator changed on Aug 11, 2026
+>
+> If you have not re-pasted **`nexus-strike-metrics.pine`** since **4.4.0**, do it — nothing updates it for you, on any browser. Copy it from **step 0** above, paste over the old one, **Ctrl+S**. Your saved settings survive.
+
 ## v4.19.7 — 2026-08-19
 
 **Setup no longer hangs on TradingView's "save before adding" question, and no longer refuses to do the obvious thing.**
