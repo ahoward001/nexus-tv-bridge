@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v5.0.1.0 — 2026-08-25
+
+**The iPhone shortcuts now tell you why they failed instead of doing nothing.**
+
+Both shortcuts hand their result back to iOS through a single `completion()` call at the very end. Neither wrapped its work in error handling, so anything unexpected on the page meant that call was never reached — and a Shortcut that never calls `completion()` returns **nothing at all**. No text, no error, no clue. Which is exactly what it looks like when the whole thing is broken.
+
+They now always return something. If it worked you get the string as before. If it didn't, you get what was actually on the page:
+
+```
+NO DATA — url=dashboard.nexusfutures.net/ · html=412kb · "strike"=0 · "oiNeto"=0 · login=yes
+```
+
+That one line answers the question on its own: whether you were signed in, whether the page had loaded, and whether Nexus's per-strike data was present at all. If the script itself fell over you get `FAILED —` and the error instead.
+
+Nothing else about them changed — the output format is untouched, and it still matches what the extension writes.
+
+### Recent
+
+**v5.0.0.0** — The indicator now sets itself up, and fixes itself when something is wrong
+
+**v4.19.12** — A new dotted line now has to earn the interruption
+
+**v4.19.11** — The button turned yellow about five seconds after a clean sync
+
+**v4.19.10** — Setup stops apologising for how it did the job
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.0.0 — 2026-08-20
 
 **The indicator now sets itself up, and fixes itself when something is wrong.**
