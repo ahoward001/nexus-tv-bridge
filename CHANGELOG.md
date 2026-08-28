@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.2.0 — 2026-08-28
+
+**A sync could report success while Nexus Futures drew nothing.**
+
+Two things had to line up, and both were mine.
+
+**"Verified" didn't mean what it said.** After writing the levels the sync checks the field still holds them — but it accepted a second, much weaker signal as good enough: that the value had landed in the dialog *before* OK was pressed. So a write the indicator discarded on apply still logged `verified=true`, and the warning built for exactly this case never fired. Verified now means one thing: the field still holds the code after OK. If the dialog took it and the indicator didn't keep it, that's said plainly, and **"Levels didn't stick"** appears as it always should have.
+
+**The levels field could be the wrong field.** Finding it worked by walking up to five levels of ancestors and matching any that mentioned "Niveles" or "Levels". Walk up far enough and that text is the entire settings dialog — so with more than one text box, the first one won whether or not it was the right one, and the write then verified happily into an input that draws nothing. It now scores candidates by how close and how specific the matching label is and takes the best; if two are genuinely indistinguishable it refuses and says so rather than guessing.
+
+If Nexus changes the shape of that dialog again, this now fails loudly instead of quietly.
+
+### Recent
+
+**v5.0.1.0** — The iPhone shortcuts now tell you why they failed instead of doing nothing
+
+**v5.0.0.0** — The indicator now sets itself up, and fixes itself when something is wrong
+
+**v4.19.12** — A new dotted line now has to earn the interruption
+
+**v4.19.11** — The button turned yellow about five seconds after a clean sync
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.1.0 — 2026-08-25
 
 **The iPhone shortcuts now tell you why they failed instead of doing nothing.**
