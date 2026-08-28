@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.3.0 — 2026-08-28
+
+**A narrowed Nexus window broke the sync, and the last version cried wolf about it.**
+
+Two things, and the first is the real one.
+
+**Nexus's view switcher becomes a dropdown in a narrow window.** Side by side with a chart, the row of view tabs collapses into a single **VISTA** menu — and its items are dropdown options, not buttons. The extension only knew how to click buttons and links, so on a narrowed dashboard it could never reach the **Export** view at all. That's the cause of `view=overview`, `export-code not readable`, and `in-place skipped — no export panel` on a dashboard that was sitting there working perfectly. It now drives the dropdown too, including a real `<select>`, which has to be *set* rather than clicked.
+
+**And "Levels didn't stick" was firing on syncs that worked.** The previous release moved the check to after pressing OK — but pressing OK closes the settings dialog, so the field is gone and there is nothing left to read. Every successful sync then looked like a failure. The check is back where it belongs: the field is confirmed to hold the code while the dialog is still open, which is what "the write landed" actually means. The reading after OK is now treated as the bonus it is.
+
+That one is on me — it was introduced yesterday and shipped without being run against a live chart.
+
+### Recent
+
+**v5.0.2.0** — A sync could report success while Nexus Futures drew nothing
+
+**v5.0.1.0** — The iPhone shortcuts now tell you why they failed instead of doing nothing
+
+**v5.0.0.0** — The indicator now sets itself up, and fixes itself when something is wrong
+
+**v4.19.12** — A new dotted line now has to earn the interruption
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.2.0 — 2026-08-28
 
 **A sync could report success while Nexus Futures drew nothing.**
