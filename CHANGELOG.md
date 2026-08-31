@@ -6,6 +6,55 @@ Newest first.
 
 ---
 
+## v5.1.2.0 — 2026-08-31
+
+**Charts now pick up a new indicator on their own. This was broken for everyone.**
+
+The extension was only willing to tell you about a newer script if it had a record of installing that script itself. That sounds reasonable and was quietly useless, because the record lives in extension storage — **which Chrome wipes every time an extension is removed and re-added.** Anyone who reinstalled the extension, and anyone who pasted the script into TradingView by hand, had no record. No record meant no update, ever, no matter how far behind the chart was. If your team wasn't picking up new scripts, this is why.
+
+It now reads the chart instead of its own notes. On load, if it has nothing it trusts, it opens the Pine Editor, reads the version stamped in the script, and **rewrites it automatically** if it's behind. No prompt, nothing to notice or click.
+
+Two things it will not do:
+
+- **It won't touch a script that isn't ours.** The Pine Editor opens whatever you had open last, which might be your own work. If the open script isn't Nexus Strike Metrics, it says so in the log and stops. A missed update is recoverable; an overwritten script isn't.
+- **It won't rewrite your chart on every release.** "Is this current?" is answered by the indicator's actual code, not its version number — every build re-stamps that number whether or not the script changed. Same code means nothing happens.
+
+Setting up a chart that has *no* indicator on it still asks first. That's a different question from keeping an existing script current, and adding an indicator to someone's chart unannounced is a bigger thing to do uninvited.
+
+**Also fixed:** the release tooling reported a broken update chain on v5.1.1.1 when nothing was wrong — it was reading a CDN cache that hadn't caught up yet. It now asks GitHub directly, and treats a lagging cache as the temporary thing it is.
+
+### Recent
+
+**v5.1.1.1** — Cleans up the version line on your chart, and stops trusting a bad one
+
+**v5.1.1.0** — Cosmetic, but embarrassing: the version number printed inside the files was growing
+
+**v5.1.0.0** — It waits when Nexus is slow, instead of telling you it failed
+
+**v5.0.12.0** — The wait on a slow dashboard is now fifteen seconds
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.1.1 — 2026-08-31
 
 **Cleans up the version line on your chart, and stops trusting a bad one.**
