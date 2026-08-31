@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.7.0 — 2026-08-31
+
+**A stale snapshot can now be caught on a tab where nothing is rendered at all.**
+
+The per-strike numbers come from data Nexus writes into the page when the server renders it. Client-side updates repaint the table but never rewrite that data — so what we read is frozen at page load, and its age is simply the page's age.
+
+The previous release started catching stale snapshots by comparing their values against the table on screen. That works, and it's verified working on a live dashboard. But it needs a table to compare against, and so does the older spot check — and on a Nexus tab sitting in the background, collapsed, neither is there. Measured on a live page: 55 rows of data, **no** grid rendered and **no** readable spot card, so nothing was checking anything and the snapshot was taken on trust.
+
+There is a signal that's always available, and it's the most direct one: how long ago the page was rendered. That's exactly how old the data is. Past two minutes — Nexus republishes about once a minute — the snapshot is treated as stale and the live table is used instead.
+
+Three checks now, in order of how reliable they are: the page's own age, then whether the snapshot's values still match what's on screen, then the old spot comparison as a last resort.
+
+### Recent
+
+**v5.0.6.0** — The columns could be a batch behind while the sync insisted they were current
+
+**v5.0.5.0** — One click said it couldn't reach Nexus; the next said "no newer levels" with a green tick. Neither had actually reached Nexus
+
+**v5.0.4.0** — "Strike metrics didn't update" — because Nexus changed the shape of its data
+
+**v5.0.3.0** — A narrowed Nexus window broke the sync, and the last version cried wolf about it
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.6.0 — 2026-08-31
 
 **The columns could be a batch behind while the sync insisted they were current.**
