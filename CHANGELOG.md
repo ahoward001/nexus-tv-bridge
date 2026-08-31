@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.0.11.0 — 2026-08-31
+
+**It now watches the dashboard's loading bar, and waits while it's up.**
+
+When Nexus is slow, the export tab shows a progress bar and "Loading tab data" while it fetches. The sync couldn't see that, so it gave up on its own schedule and reported a failure — for data that was still on its way. Click again a minute later and it works, which is where the contradictory pair of messages came from.
+
+It now looks for that bar. While it's on screen the data is coming, so the read holds and keeps checking, up to 25 seconds past its normal budget. When the bar is gone and there's still no code, the box is genuinely empty and it fails as before — the extra time is only ever spent when the dashboard is visibly still working, so a normal day is untouched.
+
+This is the fix v5.0.10.0 should have been. That release watched the *page load*, which was the wrong thing to watch: the dashboard finishes loading and reports itself complete long before the export tab's data arrives — measured at 22 seconds and still counting on a slow afternoon, on a page that called itself done. The loading bar is the honest signal. The page-load handling from 5.0.10.0 stays, since it covers genuinely slow navigations.
+
+**When it opens a tab of its own,** it now puts it in your largest window, maximizes that window if it's small, and brings it to the front. Beyond being less jarring, it's load-bearing: Nexus only fetches a tab's data while that tab is actually painting, so a cramped or minimized window could stall the very read the tab was opened to do.
+
+Build artifacts no longer land in your Downloads folder; they're written to the project's own `build/` directory.
+
+### Recent
+
+**v5.0.10.0** — "Couldn't reload Nexus" on a slow morning — when the data was seconds away
+
+**v5.0.9.0** — A QQQ chart could get SPX's levels, and be told it worked
+
+**v5.0.8.0** — Nexus rebuilt the strike table, and the reader that was supposed to catch a stale snapshot could no longer see it
+
+**v5.0.7.0** — A stale snapshot can now be caught on a tab where nothing is rendered at all
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.10.0 — 2026-08-31
 
 **"Couldn't reload Nexus" on a slow morning — when the data was seconds away.**
