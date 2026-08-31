@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.9.0 — 2026-08-31
+
+**A QQQ chart could get SPX's levels, and be told it worked.**
+
+To know which symbol to fetch, the sync reads it off your chart. If that read fails it used to fall back to whichever ticker your Nexus dashboard happened to be showing, and then to QQQ. That fallback makes sense when you sync from the dashboard with no chart involved. It is dangerous when a chart *is* the target and its symbol simply didn't read for a moment — because the run then goes and fetches a different instrument's levels and pastes them onto your chart, with a green tick and nothing to suggest anything is wrong.
+
+Seen live: a QQQ chart drove the dashboard to `ticker=SPX` and applied SPX's levels. A chart tab that has just been dragged between windows, or is still settling, is enough to trigger it.
+
+It now refuses. If there's a chart in front of it and the symbol won't read, nothing is changed and it says so — naming the symbol it *would* have guessed, so you can see what was avoided. The next click reads fine.
+
+Wrong levels that look right are worse than no levels.
+
+### Recent
+
+**v5.0.8.0** — Nexus rebuilt the strike table, and the reader that was supposed to catch a stale snapshot could no longer see it
+
+**v5.0.7.0** — A stale snapshot can now be caught on a tab where nothing is rendered at all
+
+**v5.0.6.0** — The columns could be a batch behind while the sync insisted they were current
+
+**v5.0.5.0** — One click said it couldn't reach Nexus; the next said "no newer levels" with a green tick. Neither had actually reached Nexus
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.8.0 — 2026-08-31
 
 **Nexus rebuilt the strike table, and the reader that was supposed to catch a stale snapshot could no longer see it.**
