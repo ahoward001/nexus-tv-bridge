@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.0.10.0 — 2026-08-31
+
+**"Couldn't reload Nexus" on a slow morning — when the data was seconds away.**
+
+Every step of a sync has a time budget, sized for a normal day. When the dashboard is slow, those budgets ran out while the page was still on its way, and the sync then read a page that hadn't rendered yet and reported failure. Click again a moment later and it passes with a green tick — which is where the contradictory pair of messages came from. One of them was wrong, and it was the failure.
+
+The fix is not a longer wait for everybody. That would tax every fast day to pay for the occasional slow one. Instead, when a budget runs out, it now checks whether the tab is *still loading* — Chrome's own loading indicator, the same thing you see spinning. If it is, that's live evidence the page is coming, so it holds on and keeps checking, up to twelve seconds past the budget. If the tab has gone quiet, it gives up exactly as before.
+
+A page that lands on time never touches any of this, so nothing gets slower on a normal day. Measured on the dashboard as it is now: a good load finishes in about 1.7 seconds, well inside the budget.
+
+Worth knowing why it watches the tab and not the page: the dashboard renders on the server and freezes at load — measured live, zero updates and no data fetches happen after the page arrives. There's no spinner inside the page to watch for. The slow part *is* the page load, which is exactly what the tab indicator reports, and it can't be broken by the next dashboard redesign.
+
+Also: the release tooling no longer false-alarms about serving an unsigned Firefox build when a freshly uploaded file simply hasn't finished propagating yet.
+
+### Recent
+
+**v5.0.9.0** — A QQQ chart could get SPX's levels, and be told it worked
+
+**v5.0.8.0** — Nexus rebuilt the strike table, and the reader that was supposed to catch a stale snapshot could no longer see it
+
+**v5.0.7.0** — A stale snapshot can now be caught on a tab where nothing is rendered at all
+
+**v5.0.6.0** — The columns could be a batch behind while the sync insisted they were current
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.9.0 — 2026-08-31
 
 **A QQQ chart could get SPX's levels, and be told it worked.**
