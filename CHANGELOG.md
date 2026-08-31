@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.1.3.1 — 2026-08-31
+
+**It asks before rewriting your Pine script again — and two syncs can no longer collide.**
+
+v5.1.2.0 rewrote an out-of-date script on the chart without asking. That was a step too far: it should tell you and let you decide, not paste over your chart on its own. It asks again.
+
+What it keeps from v5.1.2.0 is the part that was actually broken. It used to work out whether your script was current by consulting its own record of having installed it — and that record is wiped whenever the extension is removed and re-added, and never existed at all for anyone who pasted the script in by hand. No record meant no notice, ever, however far behind the chart was. It now reads the version stamp off the chart itself, so it can tell you the script is old regardless of who put it there. The message names the version actually on your chart rather than what we last remembered writing.
+
+**Two syncs can't run at once any more.** Finishing a Pine setup starts a sync by itself, so if you also clicked the button you got two — and they fought over the same Nexus dashboard tab. One reloaded it while the other was mid-read, that read came back with no ticker and no export panel, and the losing run "recovered" by opening a fresh tab. That's the double-reload-and-a-stray-tab you saw. A second sync while one is in flight is now ignored; the button still reports the running one's result.
+
+**Version numbering:** the fourth digit marks that the Pine script changed. It's a standing note, not a counter that resets, so it stays put when the other numbers move — hence 5.1.3.**1**.
+
+### Recent
+
+**v5.1.2.0** — Charts now pick up a new indicator on their own. This was broken for everyone
+
+**v5.1.1.1** — Cleans up the version line on your chart, and stops trusting a bad one
+
+**v5.1.1.0** — Cosmetic, but embarrassing: the version number printed inside the files was growing
+
+**v5.1.0.0** — It waits when Nexus is slow, instead of telling you it failed
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.2.0 — 2026-08-31
 
 **Charts now pick up a new indicator on their own. This was broken for everyone.**
