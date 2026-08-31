@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.1.1.1 — 2026-08-31
+
+**Cleans up the version line on your chart, and stops trusting a bad one.**
+
+v5.1.1.0 fixed the packaging bug that kept adding `.0` to the version stamped inside the Pine script. It didn't fix the copy already sitting on your chart — that one still reads:
+
+    // Nexus Strike Metrics for Nexus → TradingView Bridge 5.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+
+Reload a chart with the script on it and the extension now offers to rewrite it, stamped cleanly. It's a one-time tidy-up per chart: the indicator's code is unchanged, only the header line, and your settings are kept. Say yes once and it won't ask again.
+
+**It also stops mis-reading these stamps.** Two things were wrong. The pattern that reads the version only ever looked at the first four parts, so `5.1.0.0.0.0.0.0` came back as `5.1.0.0` and looked perfectly valid. And after pasting, the check that confirms the new script landed was a substring test — `"5.1.0.0.0.0"` contains `"5.1.0.0"`, so a stale script could confirm itself as current. Both now read the whole stamp and compare it exactly, which is also why the extension can tell your chart needs the tidy-up at all.
+
+Normal updates are unaffected: the extension still only offers a real update when the indicator's *code* actually changes, not every time a version number moves.
+
+### Recent
+
+**v5.1.1.0** — Cosmetic, but embarrassing: the version number printed inside the files was growing
+
+**v5.1.0.0** — It waits when Nexus is slow, instead of telling you it failed
+
+**v5.0.12.0** — The wait on a slow dashboard is now fifteen seconds
+
+**v5.0.11.0** — It now watches the dashboard's loading bar, and waits while it's up
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.1.0 — 2026-08-31
 
 **Cosmetic, but embarrassing: the version number printed inside the files was growing.**
