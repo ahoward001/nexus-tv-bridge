@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.1.0.0 — 2026-08-31
+
+**It waits when Nexus is slow, instead of telling you it failed.**
+
+When the dashboard is busy, its export tab shows a progress bar and *"Loading tab data"* while it fetches. The sync couldn't see that, so it gave up on its own schedule and reported a failure — for data that was still on its way. Click again a minute later and it works, which is where the contradictory pair of messages came from: *"couldn't reload Nexus"* followed by a green tick saying nothing had changed.
+
+It now watches for that bar and holds while it's up, for up to 15 seconds past its normal budget. That time is only ever spent while the dashboard is visibly still working, so a normal day is exactly as fast as before. Once the bar is gone and there's still no data, it fails immediately, as it always did.
+
+**When it needs to open a tab of its own,** it now opens in your largest window, maximizes that window if it's small, and brings it to the front. That's partly so it isn't jarring, but mostly because it matters: Nexus only loads a tab's data while that tab is actually on screen, so a tab parked in a cramped or minimized window could stall the very read it was opened to do.
+
+**It also refuses to guess your chart's symbol.** If the symbol won't read for a moment, it changes nothing and says so, rather than falling back to whatever ticker the dashboard happened to be showing — which could put SPX's levels on a QQQ chart under a green tick.
+
+**The install page above is reorganised:** installing the extension and setting up the indicators are now two separate sections. Worth knowing if you're setting someone else up — the **Nexus Strike Metrics** script is no longer something you paste in by hand. The extension writes it, adds it to your chart, and updates it in place when it changes. The manual steps are still there as a fallback.
+
+### Recent
+
+**v5.0.12.0** — The wait on a slow dashboard is now fifteen seconds
+
+**v5.0.11.0** — It now watches the dashboard's loading bar, and waits while it's up
+
+**v5.0.10.0** — "Couldn't reload Nexus" on a slow morning — when the data was seconds away
+
+**v5.0.9.0** — A QQQ chart could get SPX's levels, and be told it worked
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.12.0 — 2026-08-31
 
 **The wait on a slow dashboard is now fifteen seconds.**
