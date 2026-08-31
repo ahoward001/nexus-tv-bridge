@@ -6,6 +6,48 @@ Newest first.
 
 ---
 
+## v5.0.12.0 — 2026-08-31
+
+**The wait on a slow dashboard is now fifteen seconds.**
+
+v5.0.11.0 taught the sync to watch for the dashboard's "Loading tab data" bar and keep waiting while it's up. That hold was set to 25 seconds; it's now 15, which is long enough for the slow loads seen in practice without leaving you staring at a sync that won't finish.
+
+Everything else about it is unchanged: the extra time is only ever spent while the loading bar is actually on screen, so a normal day never touches it, and once the bar is gone an empty box still fails immediately.
+
+Also fixed: an unrecognized flag on the release script was silently ignored instead of stopping the run — so a mistyped `--dry` published a real release. Any unknown flag now stops before anything ships.
+
+### Recent
+
+**v5.0.11.0** — It now watches the dashboard's loading bar, and waits while it's up
+
+**v5.0.10.0** — "Couldn't reload Nexus" on a slow morning — when the data was seconds away
+
+**v5.0.9.0** — A QQQ chart could get SPX's levels, and be told it worked
+
+**v5.0.8.0** — Nexus rebuilt the strike table, and the reader that was supposed to catch a stale snapshot could no longer see it
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.11.0 — 2026-08-31
 
 **It now watches the dashboard's loading bar, and waits while it's up.**
