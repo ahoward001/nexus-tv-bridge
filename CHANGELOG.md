@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.5.0 — 2026-08-31
+
+**One click said it couldn't reach Nexus; the next said "no newer levels" with a green tick. Neither had actually reached Nexus.**
+
+Both messages came from the same run of events, and only one of them could be true — which is exactly the right thing to notice.
+
+**"Confirmed" was being claimed without checking.** When the export already on the page was young enough, the sync skipped the reload entirely — sensible, and that's the fast path working as designed. But it then labelled the result the same way as a run that *had* reloaded and compared, so the hover said **"checked Nexus, nothing newer published"** about a run that checked nothing. That now says what actually happened: *"levels already current — Nexus not re-checked this run"*.
+
+**And a failed run no longer hands the next one a free pass.** After a reload that didn't land, the following click would look at the export age, find it under the threshold, take the shortcut and report success. So the failure and the false all-clear were the same data seen twice. A sync that couldn't reach Nexus now forces the next one to do a real reload rather than trusting the age — until one of them actually gets through.
+
+Nothing about the levels themselves changed; this is only about the extension telling you the truth about what it did and didn't verify.
+
+### Recent
+
+**v5.0.4.0** — "Strike metrics didn't update" — because Nexus changed the shape of its data
+
+**v5.0.3.0** — A narrowed Nexus window broke the sync, and the last version cried wolf about it
+
+**v5.0.2.0** — A sync could report success while Nexus Futures drew nothing
+
+**v5.0.1.0** — The iPhone shortcuts now tell you why they failed instead of doing nothing
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.4.0 — 2026-08-31
 
 **"Strike metrics didn't update" — because Nexus changed the shape of its data.**
