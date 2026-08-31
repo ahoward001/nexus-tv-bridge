@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.0.4.0 — 2026-08-31
+
+**"Strike metrics didn't update" — because Nexus changed the shape of its data.**
+
+The Score / OI / GEX columns are read straight out of the dashboard's own data, which is far more reliable than scraping the rendered table. That reader carved each strike out with a pattern that assumed every row was flat. Nexus's new dashboard nests objects inside each row, and a pattern built that way cannot see past a nested brace — so every row stopped matching at once.
+
+Measured on the live dashboard: **1,347** objects still matched the old pattern and **none** of them carried the fields we need. Hence the columns going stale every sync while the levels kept working perfectly — two different readers, and only one of them broke.
+
+It now reads the strike array properly rather than pattern-matching text, and still falls back to the old approach so an older dashboard keeps working. Checked against the live page: 55 strikes, every value correct.
+
+**The iPhone shortcut had the identical bug** — same pattern, same failure, which is why it returned nothing at all. Fixed the same way. Re-paste it into the Shortcuts app to pick this up.
+
+### Recent
+
+**v5.0.3.0** — A narrowed Nexus window broke the sync, and the last version cried wolf about it
+
+**v5.0.2.0** — A sync could report success while Nexus Futures drew nothing
+
+**v5.0.1.0** — The iPhone shortcuts now tell you why they failed instead of doing nothing
+
+**v5.0.0.0** — The indicator now sets itself up, and fixes itself when something is wrong
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.3.0 — 2026-08-28
 
 **A narrowed Nexus window broke the sync, and the last version cried wolf about it.**
