@@ -6,6 +6,48 @@ Newest first.
 
 ---
 
+## v5.0.6.0 — 2026-08-31
+
+**The columns could be a batch behind while the sync insisted they were current.**
+
+The per-strike numbers are read from the dashboard's own data rather than its rendered table — that's what lets a sync work without the Nexus tab being visible or the strike section expanded. But that data is a **snapshot taken when the page loaded**, while the table on screen keeps updating. So the snapshot can fall behind what you're looking at.
+
+There was a check for this, and it asked the wrong question: it compared the snapshot's spot price against the live one and called it stale only if they differed by more than a strike and a half. On a quiet tape spot barely moves while the chain moves plenty. Observed live: strike 715's GEX was **−38.2M** in the snapshot and **−42.5M** on the dashboard, with spot sitting at 715 either way. The check passed, the old numbers went to the chart, and the sync reported success.
+
+It now asks the question that actually matters — do the snapshot's own numbers still appear on screen? It takes the strikes nearest spot and looks for their values in the rendered grid. If the grid is showing numbers and none of them are ours, the snapshot has been overtaken and the live grid is used instead, whatever spot says. When no grid is rendered there is nothing to compare against, so it keeps the snapshot rather than inventing a problem.
+
+### Recent
+
+**v5.0.5.0** — One click said it couldn't reach Nexus; the next said "no newer levels" with a green tick. Neither had actually reached Nexus
+
+**v5.0.4.0** — "Strike metrics didn't update" — because Nexus changed the shape of its data
+
+**v5.0.3.0** — A narrowed Nexus window broke the sync, and the last version cried wolf about it
+
+**v5.0.2.0** — A sync could report success while Nexus Futures drew nothing
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns, needed on **both** browsers.
+Clicking **downloads a text file and installs nothing.** You paste its contents into TradingView's Pine Editor by hand — usually easier to use the "Open the script" link above and copy it in the browser.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.0.5.0 — 2026-08-31
 
 **One click said it couldn't reach Nexus; the next said "no newer levels" with a green tick. Neither had actually reached Nexus.**
