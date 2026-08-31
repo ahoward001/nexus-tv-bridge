@@ -6,6 +6,48 @@ Newest first.
 
 ---
 
+## v5.1.4.1 — 2026-08-31
+
+**Updating the indicator turns the button yellow instead of syncing on its own.**
+
+When the Pine script was installed or rewritten, the extension immediately started a sync to fill the columns back in. It meant well, but a sync you didn't ask for reloads your Nexus dashboard tab underneath you — and if you clicked the green button around the same moment, the two runs fought over that tab: one reloaded it while the other was mid-read, and the losing run recovered by opening a stray tab.
+
+Now it just goes **yellow**, the same "worth a click" colour as any other chart that wants a sync, with a hover note saying the indicator was updated. Nothing reloads until you decide to.
+
+The collision itself is fixed too, from either direction: a second sync started while one is already running is ignored rather than run alongside it.
+
+### Recent
+
+**v5.1.3.1** — It asks before rewriting your Pine script again — and two syncs can no longer collide
+
+**v5.1.2.0** — Charts now pick up a new indicator on their own. This was broken for everyone
+
+**v5.1.1.1** — Cleans up the version line on your chart, and stops trusting a bad one
+
+**v5.1.1.0** — Cosmetic, but embarrassing: the version number printed inside the files was growing
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.3.1 — 2026-08-31
 
 **It asks before rewriting your Pine script again — and two syncs can no longer collide.**
