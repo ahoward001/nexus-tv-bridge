@@ -3,8 +3,8 @@
     "nexus-tv-bridge@aidanhoward": {
       "updates": [
         {
-          "version": "5.1.9.1",
-          "update_link": "https://github.com/ahoward001/nexus-tv-bridge/releases/download/v5.1.9.1/1-FIREFOX-SETUP-nexus-tv-bridge-v5.1.9.1.xpi"
+          "version": "5.1.10.1",
+          "update_link": "https://github.com/ahoward001/nexus-tv-bridge/releases/download/v5.1.10.1/1-FIREFOX-SETUP-nexus-tv-bridge-v5.1.10.1.xpi"
         }
       ]
     }
