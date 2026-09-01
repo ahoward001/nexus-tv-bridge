@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.1.9.1 — 2026-09-01
+
+**Orange has been impossible for everyone. It works again.**
+
+Orange is the one state based on proof: the export code Nexus is publishing right now differs from the code your chart was built from, so a sync *will* move your lines. To check that, the extension reads the export code off the dashboard — and it refused to read anything unless it first found an element called `section.export-panel`.
+
+The dashboard redesign removed that element. Verified live today: there are zero of them on the export view. So the read returned nothing on **every** call, the comparison had nothing to compare, and orange could never fire — no matter how far the levels had moved. It now recognises the export view by finding the code box itself, which is what it was actually looking for.
+
+**And a matching batch no longer counts as confirmation when its age is unknown.** The dashboard renders on the server and freezes at page load, so a Nexus tab left open since yesterday still shows yesterday's export. The extension read it, compared it against a chart pasted from that same frozen tab, found them identical, and called your chart confirmed current — a green button sitting over day-old levels. When there's no timestamp to read, the age of the page itself is now used, because that *is* the age of the data on it.
+
+Together these are why a wall could close in on price with nothing to show for it: the proof path was dead, and the fallback path was quietly agreeing with a frozen page.
+
+### Recent
+
+**v5.1.8.1** — This is why the button stayed green while the walls closed in on price
+
+**v5.1.6.1** — It checks first and looks at the clock last — so a real change reaches you immediately
+
+**v5.1.5.1** — A chart the extension knows nothing about no longer looks like a chart that's up to date
+
+**v5.1.4.1** — Updating the indicator turns the button yellow instead of syncing on its own
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.8.1 — 2026-09-01
 
 **This is why the button stayed green while the walls closed in on price.**
