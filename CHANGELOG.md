@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.1.6.1 — 2026-09-01
+
+**It checks first and looks at the clock last — so a real change reaches you immediately.**
+
+The staleness clock used to wrap the entire check: nothing was examined at all until the levels on your chart were older than the threshold. That's backwards. A call wall moving in on price is news the moment it happens, not once a timer says your chart is old enough to bother looking at.
+
+The checks now run every minute regardless of age, and the clock is applied at the very end — and only to a guess. If the export code Nexus is publishing differs from what you pasted, a sync **will** move your lines, and that's now reported the moment it's true, whatever the clock says. Unproven signals still wait for the threshold and still respect the quiet minute after a sync, so this doesn't make the button chattier.
+
+**The hot window now runs to noon ET**, up from 11:00 — so the 1-minute staleness bar covers the whole volatile morning. If you'd never changed that setting by hand, it moves for you; if you had, yours is left alone. It's still adjustable in Settings.
+
+Worth knowing what does and doesn't earn a colour: **orange** means the export genuinely differs from what's on your chart, and it's the only state based on proof. **Yellow** means something moved near price, a strike newly earned a dotted line, or the export couldn't be confirmed. The *size* of a move is never itself a criterion — a big move and a small one both show up as a difference in the export, or not at all.
+
+### Recent
+
+**v5.1.5.1** — A chart the extension knows nothing about no longer looks like a chart that's up to date
+
+**v5.1.4.1** — Updating the indicator turns the button yellow instead of syncing on its own
+
+**v5.1.3.1** — It asks before rewriting your Pine script again — and two syncs can no longer collide
+
+**v5.1.2.0** — Charts now pick up a new indicator on their own. This was broken for everyone
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.5.1 — 2026-09-01
 
 **A chart the extension knows nothing about no longer looks like a chart that's up to date.**
