@@ -6,6 +6,55 @@ Newest first.
 
 ---
 
+## v5.1.5.1 — 2026-09-01
+
+**A chart the extension knows nothing about no longer looks like a chart that's up to date.**
+
+Green means "your chart matches Nexus". To say that, the extension needs a record of the sync that put the levels there. If it has no record, it used to say nothing at all — and the button's resting state is green, so a chart carrying yesterday's levels sat there looking current.
+
+The record lives in extension storage, **which Chrome wipes every time an extension is removed and re-added**. So every reinstall silently reset every open chart to "no baseline" and left them all green until the next manual sync. That's why a big overnight move could go unflagged: nothing was being evaluated at all.
+
+A chart with no baseline now goes **yellow** — "I can't tell how old these levels are" — which is the honest answer. If you've set the button to stay green when unsure, that still wins; this is the definition of unsure.
+
+**What actually turns the button yellow or orange, since it's worth stating plainly:**
+
+- Nothing is evaluated until the levels on your chart are older than the staleness threshold — 1 minute between the open and 11:00 ET, 10 minutes after that.
+- **Orange** means a sync *will* move lines: the export code Nexus is publishing now differs from the one you pasted. It's the only state based on proof.
+- **Yellow** is a heads-up: the level cards moved near price, or a strike newly earned a dotted line, or the export couldn't be read to confirm either way.
+- The *size* of a move isn't a criterion. A large change and a small one both show up the same way — as a difference in the export, or not at all.
+
+### Recent
+
+**v5.1.4.1** — Updating the indicator turns the button yellow instead of syncing on its own
+
+**v5.1.3.1** — It asks before rewriting your Pine script again — and two syncs can no longer collide
+
+**v5.1.2.0** — Charts now pick up a new indicator on their own. This was broken for everyone
+
+**v5.1.1.1** — Cleans up the version line on your chart, and stops trusting a bad one
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.4.1 — 2026-08-31
 
 **Updating the indicator turns the button yellow instead of syncing on its own.**
