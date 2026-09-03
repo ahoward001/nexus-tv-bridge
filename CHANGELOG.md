@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v5.2.0.1 — 2026-09-03
+
+**The hover now tells you how old your levels and columns actually are.**
+
+It used to lead with *"Last sync 3:07 PM"* — the last time you pressed the button. On a run that found nothing new, that says nothing about the numbers you're looking at: click at 3:07 on levels that last moved at 1:40 and it reported 3:07. The one question the hover exists to answer was the one it couldn't.
+
+It now keeps track of when each half **actually changed**, and shows all three:
+
+    Levels updated 1:40 PM (87 min ago)
+    Strikes updated 2:55 PM (12 min ago)
+    Last checked 3:07 PM (just now)
+
+The two halves are tracked separately because they change separately — a re-publish can move the levels while the columns stay put, or the other way round. Levels count as changed when the export code differs from what's already on your chart; columns when what gets written to them differs. A sync that finds nothing new moves only the "last checked" line, which is the honest answer.
+
+It also survives a page reload now: the times come back with the chart instead of the hover claiming it has never been synced on a chart that plainly has levels drawn on it.
+
+### Recent
+
+**v5.1.14.1** — A stuck sync could leave the button dead — clicking it did nothing at all
+
+**v5.1.13.1** — One half failing no longer cancels the other half
+
+**v5.1.12.1** — "Strike metrics didn't update" was my fault, introduced two releases ago
+
+**v5.1.11.1** — The Overview half of the two-view read had no narrow-window fallback
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.1.14.1 — 2026-09-01
 
 **A stuck sync could leave the button dead — clicking it did nothing at all.**
