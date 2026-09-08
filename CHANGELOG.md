@@ -6,6 +6,55 @@ Newest first.
 
 ---
 
+## v5.2.5.1 — 2026-09-08
+
+**Everything it looks for now accepts English or Spanish.**
+
+The dashboard has a language dropdown, and a number of checks were written against the Spanish wording alone. Those fail silently when the page is in English — they don't error, they just never match, and the extension quietly behaves as though the thing isn't there.
+
+Now bilingual, in both directions:
+
+- **How old the data is** — `hace 81 s` and `45 s ago` are both understood, at all three places that read it. The absolute timestamp is preferred anyway, since it doesn't depend on language at all.
+- **The copy button** — was `copiar` / `portapapeles` only; now also `copy` / `clipboard`.
+- **Busy wording** — adds `calculating` and `actualizando` alongside `loading` and `cargando`.
+- **The export view's own labels** — the nav button and the panel headings, both directions.
+- **On the chart side** — the indicator's inputs and its legend entry, so `Niveles` / `Levels` and `Strike metrics` / `Métricas de strike` all match.
+- **TradingView's Pine dialogs** — `Save` / `Guardar`, `OK` / `Aceptar`, and the save-script prompt.
+
+**A correction I owe you.** I said twice that the dashboard had removed `section.export-panel`, and shipped that claim in release notes. It hadn't. That element lives on the **Export** view and is present exactly where it should be — I was checking on the Overview view and on browser tabs that weren't being drawn, where it legitimately isn't. Nothing was removed. The related checks are now written to accept either the panel or the rendered code box, so a genuine rename later can't silently turn into "the export view isn't there."
+
+### Recent
+
+**v5.2.4.1** — "Levels were age unknown when applied" — it couldn't read the clock any more
+
+**v5.2.3.1** — It was giving up on the strike table about ten seconds too early
+
+**v5.2.2.1** — If one Nexus tab can't answer, it now moves to the next one
+
+**v5.2.1.1** — When a new version lands, the button now tells you to reload the tab
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.2.4.1 — 2026-09-08
 
 **"Levels were age unknown when applied" — it couldn't read the clock any more.**
