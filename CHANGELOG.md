@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.2.4.1 — 2026-09-08
+
+**"Levels were age unknown when applied" — it couldn't read the clock any more.**
+
+The hover has been saying *age unknown*, and the background check has been logging *batch age UNKNOWN*, because the code that works out how old Nexus's data is was looking for page elements that no longer exist. It required a container the dashboard redesign removed, so it returned nothing on **every** call.
+
+That's worse than a cosmetic gap. An unknown age was being treated as a fresh one, so a dashboard tab that had been sitting frozen for hours could agree with your chart and be reported as confirmed current.
+
+It now reads the line the dashboard actually shows — **"Last updated: Sep 08, 11:00 AM EDT"** — and works the age out from that. Checked against the live page while writing this: stamp 11:00, clock 11:02:37, age 157 seconds.
+
+**The language dropdown mattered here.** With English selected the relative counter is no longer *"hace 81 s"*, and several checks were written against the Spanish wording alone. Where a relative counter still appears, both forms are now understood; the absolute timestamp is language-independent and is what it prefers regardless.
+
+If you switch the dashboard's language, tell me — a few things still read the page's own words, and that's the kind of change that breaks them silently rather than loudly.
+
+### Recent
+
+**v5.2.3.1** — It was giving up on the strike table about ten seconds too early
+
+**v5.2.2.1** — If one Nexus tab can't answer, it now moves to the next one
+
+**v5.2.1.1** — When a new version lands, the button now tells you to reload the tab
+
+**v5.2.0.1** — The hover now tells you how old your levels and columns actually are
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.2.3.1 — 2026-09-08
 
 **It was giving up on the strike table about ten seconds too early.**
