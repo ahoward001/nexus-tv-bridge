@@ -6,6 +6,52 @@ Newest first.
 
 ---
 
+## v5.3.0.1 — 2026-09-10
+
+**Clusters of lines now show. Two rules were hiding them.**
+
+**A strike next to one of Nexus's own levels no longer needs a perfect score to get a line.** The old rule said a strike one away from a Nexus wall had to beat both neighbours on all three columns, on the theory that it was just the wall's shoulder. It was wrong on exactly the case that exposed it: on Sep 9, strike 719 had **three times the GEX and two and a half times the open interest** of the 720 Call Wall right beside it — and was suppressed as that wall's "shoulder". It now draws on the ordinary two-of-three test like any other strike.
+
+That also releases 721, on the other side of the same wall. So where there's real concentration packed around a Nexus level, you now see the whole bunch — 721, the 720 wall, 719 — rather than the wall standing alone.
+
+**There's also no longer a cap of five lines.** Qualifying strikes used to be ranked and cut to the top five, which quietly trimmed a cluster down to whichever five ranked highest — the one pattern most worth seeing. It still only looks within ten strikes of price, and a strike can't beat a neighbour that beats it on the same column, so the list stays short on its own.
+
+What still doesn't get a dotted line: a strike that **is** one of Nexus's own levels, since Nexus already draws it and a second line on the same price adds nothing — unless it sweeps all three columns, which always draws.
+
+**Expect a little more yellow.** The button flags "a strike newly earned a line" as worth a look, and more strikes can now earn one. The existing rule that a new line only counts if it's inside the walls, or pressed right against one, still filters that.
+
+### Recent
+
+**v5.2.5.1** — Everything it looks for now accepts English or Spanish
+
+**v5.2.4.1** — "Levels were age unknown when applied" — it couldn't read the clock any more
+
+**v5.2.3.1** — It was giving up on the strike table about ten seconds too early
+
+**v5.2.2.1** — If one Nexus tab can't answer, it now moves to the next one
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.2.5.1 — 2026-09-08
 
 **Everything it looks for now accepts English or Spanish.**
