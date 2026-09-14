@@ -1,0 +1,16 @@
+# Core audio capture + math
+sounddevice==0.4.7
+numpy>=1.24,<2.3
+
+# Cry classification (YAMNet). If this fails to install on your Mac the
+# detector automatically falls back to the built-in energy backend.
+mediapipe==0.10.21
+
+# Webcam motion detection + MJPEG encoding
+opencv-python-headless==4.10.0.84
+
+# Outbound alert calls
+requests==2.32.3
+
+# Config
+tomli==2.0.1; python_version < "3.11"

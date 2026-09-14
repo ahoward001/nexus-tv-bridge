@@ -1,0 +1,97 @@
+# ===========================================================================
+#  BabyMon configuration
+#  Real config lives at ~/.config/babymon/config.toml (chmod 600).
+#  Anything you leave blank is simply disabled -- nothing here is required
+#  except at least one enabled alert channel.
+# ===========================================================================
+
+[detect]
+# "auto" uses the YAMNet cry classifier if it installed cleanly, otherwise
+# falls back to a loudness+pitch heuristic. Force one with "mediapipe"/"energy".
+backend = "auto"
+
+# How confident the classifier must be that it is hearing a baby cry (0..1).
+# Lower = more sensitive = more false alarms. 0.45 is a sane starting point.
+cry_threshold = 0.45
+
+# The cry must persist this long before anything fires. This is what stops a
+# single squeak, a door, or a passing truck from phoning you at 3am.
+sustain_seconds = 4.0
+
+# After an alert resolves, stay quiet this long before alerting again.
+cooldown_seconds = 180
+
+# Microphone input device. Leave empty for the system default, or run
+# `babymon-devices` after install to list them by name.
+input_device = ""
+
+# YAMNet category names treated as "baby in distress".
+watch_classes = [
+  "Baby cry, infant cry",
+  "Crying, sobbing",
+  "Whimper",
+  "Screaming",
+]
+
+[motion]
+# Webcam motion detection. Catches quiet trouble -- a rollover, a wedged arm --
+# that never makes a sound. Frames stay in RAM and are never written to disk.
+enabled = true
+camera_index = 0
+# Fraction of the frame that must change to count as motion (0..1).
+sensitivity = 0.035
+# Sustained motion for this long triggers a (lower urgency) alert.
+sustain_seconds = 8.0
+cooldown_seconds = 300
+
+[alerts]
+# Seconds to wait for you to acknowledge a push before escalating to a
+# phone call. Set to 0 to call immediately alongside the push.
+escalate_after_seconds = 60
+
+# Motion-only events are less urgent -- never escalate them to a phone call.
+escalate_motion_alerts = false
+
+[alerts.ntfy]
+# Free, no account. Install the ntfy app, subscribe to your topic.
+# TREAT THE TOPIC NAME AS A PASSWORD -- anyone who knows it can read your
+# alerts. The installer generates a long random one for you.
+enabled = true
+server = "https://ntfy.sh"
+topic = ""
+priority = 5
+
+[alerts.pushover]
+# $5 one-time per platform. Emergency priority re-alerts every 30s until you
+# tap acknowledge, which is also what cancels the phone call escalation.
+enabled = false
+user_key = ""
+api_token = ""
+# Emergency priority settings
+retry_seconds = 30
+expire_seconds = 600
+sound = "siren"
+
+[alerts.twilio]
+# The channel that actually wakes you. On iPhone, save `from_number` as a
+# contact and turn on Emergency Bypass so it rings through silent + Focus.
+enabled = false
+account_sid = ""
+auth_token = ""
+from_number = ""   # your Twilio number, E.164 e.g. +15551234567
+to_number = ""     # your cell, E.164
+# Spoken aloud when you pick up. Repeated twice.
+say = "Baby monitor alert. Crying detected in the nursery."
+
+[stream]
+# Private live view. "tailscale" binds ONLY to your tailnet address, so the
+# stream is unreachable from the public internet and from other devices on
+# your local wifi. "localhost" binds to this laptop only (no phone viewing).
+enabled = true
+bind = "tailscale"
+port = 8477
+username = "parent"
+password = ""      # installer generates one
+# Frames served to the browser. Lower = less CPU. Nothing is ever recorded.
+fps = 6
+width = 640
