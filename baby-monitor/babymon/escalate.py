@@ -38,6 +38,8 @@ class Incident:
     receipts: list[str] = field(default_factory=list)
     called: bool = False
     acknowledged_at: float | None = None
+    pushes: int = 0        # how many times we've re-pushed
+    calls: int = 0         # how many times we've dialled
 
 
 class Escalator:
@@ -93,7 +95,8 @@ class Escalator:
             title = "Movement in the crib"
             body = f"Sustained movement detected at {when}."
 
-        sent = self.notifier.push_all(title, body)
+        sent = self.notifier.push_all(title, body, expire=self._expire_for(inc))
+        inc.pushes = 1
         for s in sent:
             if s.ok and s.receipt:
                 inc.receipts.append(s.receipt)
@@ -116,33 +119,101 @@ class Escalator:
             return False
         return True
 
-    def _watch(self, inc: Incident) -> None:
-        """Wait out the grace period, then call if nobody acknowledged."""
-        deadline = inc.started + self.cfg.escalate_after_seconds
-        while time.time() < deadline:
-            if inc.acknowledged_at:
-                return self._resolve(inc, "acknowledged before escalation")
-            if self._poll_receipts(inc):
-                return self._resolve(inc, "acknowledged on Pushover")
-            time.sleep(min(_POLL_SECONDS, max(0.02, deadline - time.time())))
+    def _expire_for(self, inc: Incident) -> int | None:
+        """How long Pushover should keep re-alerting on its own."""
+        p = self.cfg.persist
+        if not p.enabled:
+            return None
+        if not p.max_minutes:
+            return 10800          # API maximum; our loop nags past it via ntfy
+        return int(p.max_minutes * 60)
 
-        if not self._will_call(inc.kind):
+    def _alert_text(self, inc: Incident) -> tuple[str, str]:
+        """Repeat alerts say how long this has been going on."""
+        mins = max(1, int((time.time() - inc.started) / 60))
+        noun = "crying" if inc.kind == "cry" else "movement"
+        return (
+            f"STILL {noun.upper()}",
+            f"Unacknowledged for {mins} minute{'s' if mins != 1 else ''}. "
+            f"Tap to acknowledge and silence.",
+        )
+
+    def _watch(self, inc: Incident) -> None:
+        """Nag until acknowledged, or until we give up.
+
+        Three independent clocks run here:
+          * ntfy re-push, every persist.repeat_seconds
+          * the phone call, first at escalate_after_seconds then every
+            persist.recall_seconds
+          * the overall give-up deadline, persist.max_minutes
+
+        Pushover is deliberately NOT re-sent: its server already re-alerts
+        every retry_seconds until acknowledged, so re-sending would stack
+        sirens instead of repeating one.
+        """
+        p = self.cfg.persist
+        now = time.time()
+        give_up = (inc.started + p.max_minutes * 60) if (p.enabled and p.max_minutes) else None
+        next_push = (inc.started + p.repeat_seconds) if p.enabled else None
+        next_call = inc.started + self.cfg.escalate_after_seconds
+        can_call = self._will_call(inc.kind)
+
+        if not can_call and not p.enabled:
+            # Nothing further would ever happen; don't spin.
             return self._resolve(inc, "no escalation configured for this alert type")
 
-        with self._lock:
+        while True:
             if inc.acknowledged_at:
-                return self._resolve(inc, "acknowledged at the deadline")
-            self.state = State.ESCALATED
+                return self._resolve(inc, "acknowledged")
+            if self._poll_receipts(inc):
+                return self._resolve(inc, "acknowledged on Pushover")
 
-        say = (
-            "Baby monitor alert. Crying detected in the nursery."
-            if inc.kind == "cry"
-            else "Baby monitor alert. Movement detected in the crib."
-        )
-        result = self.notifier.call(say)
-        inc.called = True
-        log.warning("escalated to phone call: %s", "placed" if result.ok else f"FAILED {result.detail}")
-        self._resolve(inc, "call placed" if result.ok else "call failed")
+            now = time.time()
+            if give_up is not None and now >= give_up:
+                log.error(
+                    "gave up after %d alerts and %d calls over %.0f minutes with no "
+                    "acknowledgement -- CHECK ON THE BABY",
+                    inc.pushes, inc.calls, p.max_minutes,
+                )
+                return self._resolve(inc, "gave up unacknowledged")
+
+            # -- repeat push ------------------------------------------------
+            if next_push is not None and now >= next_push:
+                title, body = self._alert_text(inc)
+                # ntfy only; Pushover is still re-alerting from the first send.
+                self.notifier.push_all(title, body, pushover=False)
+                inc.pushes += 1
+                next_push = now + p.repeat_seconds
+                log.warning("re-alert #%d (unacknowledged)", inc.pushes)
+
+            # -- phone call -------------------------------------------------
+            if can_call and now >= next_call:
+                say = (
+                    "Baby monitor alert. Crying detected in the nursery."
+                    if inc.kind == "cry"
+                    else "Baby monitor alert. Movement detected in the crib."
+                )
+                result = self.notifier.call(say)
+                inc.called = True
+                inc.calls += 1
+                with self._lock:
+                    self.state = State.ESCALATED
+                log.warning(
+                    "call #%d: %s", inc.calls,
+                    "placed" if result.ok else f"FAILED {result.detail}",
+                )
+                if not p.enabled:
+                    return self._resolve(inc, "call placed" if result.ok else "call failed")
+                next_call = now + p.recall_seconds
+
+            if not p.enabled and not can_call:
+                return self._resolve(inc, "nothing left to escalate")
+
+            # Sleep until the next scheduled event, but never past it.
+            upcoming = [t for t in (next_push, next_call if can_call else None, give_up)
+                        if t is not None and t > now]
+            wait = min(upcoming) - now if upcoming else _POLL_SECONDS
+            time.sleep(min(_POLL_SECONDS, max(0.02, wait)))
 
     def _poll_receipts(self, inc: Incident) -> bool:
         if not self.cfg.pushover.enabled:

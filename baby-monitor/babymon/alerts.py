@@ -53,7 +53,10 @@ class Notifier:
 
     # -- Pushover ----------------------------------------------------------
 
-    def pushover(self, title: str, message: str, emergency: bool = True) -> Sent:
+    def pushover(
+        self, title: str, message: str, emergency: bool = True,
+        expire: int | None = None,
+    ) -> Sent:
         c = self.cfg.pushover
         payload = {
             "token": c.api_token,
@@ -67,7 +70,8 @@ class Notifier:
             # Emergency priority re-alerts until acknowledged. That acknowledgement
             # is also what cancels the phone call, so we keep the receipt.
             payload["retry"] = max(30, int(c.retry_seconds))
-            payload["expire"] = min(10800, int(c.expire_seconds))
+            # 10800s (3h) is the Pushover API maximum.
+            payload["expire"] = min(10800, int(expire or c.expire_seconds))
         try:
             r = requests.post(
                 "https://api.pushover.net/1/messages.json", data=payload, timeout=_TIMEOUT
@@ -145,13 +149,27 @@ class Notifier:
 
     # -- helpers -----------------------------------------------------------
 
-    def push_all(self, title: str, message: str) -> list[Sent]:
-        """Fire every enabled push channel. Returns what happened on each."""
+    def push_all(
+        self,
+        title: str,
+        message: str,
+        *,
+        ntfy: bool = True,
+        pushover: bool = True,
+        expire: int | None = None,
+    ) -> list[Sent]:
+        """Fire the enabled push channels. Returns what happened on each.
+
+        The channel flags exist because Pushover re-alerts on its own server
+        until you acknowledge it, while ntfy does not. When we are nagging on
+        a loop we re-send ntfy each round but leave Pushover alone, otherwise
+        every round would stack another independent siren on your phone.
+        """
         out: list[Sent] = []
-        if self.cfg.ntfy.enabled:
+        if ntfy and self.cfg.ntfy.enabled:
             out.append(self.ntfy(title, message))
-        if self.cfg.pushover.enabled:
-            out.append(self.pushover(title, message, emergency=True))
+        if pushover and self.cfg.pushover.enabled:
+            out.append(self.pushover(title, message, emergency=True, expire=expire))
         return out
 
     def self_test(self) -> list[Sent]:

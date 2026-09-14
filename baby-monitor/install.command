@@ -117,6 +117,13 @@ s[1] = s[1].replace('api_token = ""', f'api_token = "{token}"', 1)
 open(path, 'w').write('[alerts.pushover]'.join(s))
 PYEOF
     ok "Pushover enabled"
+    echo
+    warn "IMPORTANT -- do this on your phone now, it is what makes the"
+    warn "alarm override your mute switch and Focus modes:"
+    warn "  Pushover app > Settings > Notification Settings"
+    warn "  > turn ON 'Critical Alerts' for emergency priority"
+    warn "  > approve the iOS dialog that appears"
+    warn "Without that toggle, a silenced phone stays silent."
   fi
 
   echo

@@ -113,13 +113,19 @@ class FakeNotifier:
     """Stands in for the real network calls."""
 
     def __init__(self, ack_after=None):
-        self.pushes, self.calls, self.cancels = [], [], []
+        self.pushes, self.calls, self.cancels, self.expires = [], [], [], []
         self._ack_after = ack_after
         self._first_poll = None
 
-    def push_all(self, title, message):
+    def push_all(self, title, message, *, ntfy=True, pushover=True, expire=None):
         self.pushes.append((title, message))
-        return [types.SimpleNamespace(channel="ntfy", ok=True, receipt="", detail="")]
+        self.expires.append(expire)
+        out = []
+        if ntfy:
+            out.append(types.SimpleNamespace(channel="ntfy", ok=True, receipt="", detail=""))
+        if pushover:
+            out.append(types.SimpleNamespace(channel="pushover", ok=True, receipt="r1", detail=""))
+        return out
 
     def call(self, say=None):
         self.calls.append(say)
@@ -135,14 +141,21 @@ class FakeNotifier:
         self.cancels.append(receipt)
 
 
-class TestEscalation(unittest.TestCase):
-    def _esc(self, notifier, escalate_after=0.4, twilio=True, motion_escalates=False):
+class _EscalatorMixin:
+    def _esc(self, notifier, escalate_after=0.4, twilio=True, motion_escalates=False,
+             persist=False, repeat=0.3, recall=0.4, max_minutes=0.0):
         c = base_cfg()
         c.alerts.escalate_after_seconds = escalate_after
         c.alerts.escalate_motion_alerts = motion_escalates
         c.alerts.twilio.enabled = twilio
+        c.alerts.persist.enabled = persist
+        c.alerts.persist.repeat_seconds = repeat
+        c.alerts.persist.recall_seconds = recall
+        c.alerts.persist.max_minutes = max_minutes
         return Escalator(c.alerts, notifier)
 
+
+class TestEscalation(_EscalatorMixin, unittest.TestCase):
     def test_push_then_call_when_ignored(self):
         n = FakeNotifier()
         e = self._esc(n)
@@ -198,6 +211,112 @@ class TestEscalation(unittest.TestCase):
         for _ in range(5):
             e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=30)
         self.assertEqual(len(n.pushes), 1)
+
+
+class TestPersistence(_EscalatorMixin, unittest.TestCase):
+    """The loop must keep nagging until acknowledged, then stop immediately."""
+
+    def test_push_repeats_until_acknowledged(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True, repeat=0.3)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(1.4)
+        self.assertGreaterEqual(len(n.pushes), 4, "should have re-pushed several times")
+        e.acknowledge()
+        time.sleep(0.4)
+        settled = len(n.pushes)
+        time.sleep(0.8)
+        self.assertEqual(len(n.pushes), settled, "acknowledging must stop the nagging")
+
+    def test_repeat_pushes_skip_pushover(self):
+        """Pushover re-alerts server-side; re-sending would stack sirens."""
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True, repeat=0.3)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(1.0)
+        e.acknowledge()
+        # Only the first push carries a Pushover send (receipt r1).
+        self.assertEqual(n.pushes[0][0], "Baby crying")
+        self.assertGreater(len(n.pushes), 1)
+
+    def test_repeat_text_reports_elapsed_time(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True, repeat=0.3)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(0.8)
+        e.acknowledge()
+        self.assertIn("STILL CRYING", n.pushes[1][0])
+        self.assertIn("Unacknowledged", n.pushes[1][1])
+
+    def test_calls_repeat_on_their_own_interval(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=0.1, persist=True, repeat=5.0, recall=0.4)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(1.5)
+        e.acknowledge()
+        self.assertGreaterEqual(len(n.calls), 3, "should have re-dialled")
+
+    def test_acknowledging_cancels_the_pushover_siren(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True, repeat=0.3)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(0.4)
+        e.acknowledge()
+        self.assertIn("r1", n.cancels, "must cancel the emergency receipt")
+
+    def test_gives_up_after_max_minutes(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True,
+                      repeat=0.3, max_minutes=1.0 / 60)   # 1 second
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(1.6)
+        self.assertEqual(e.state, State.COOLDOWN, "should stop rather than nag forever")
+        settled = len(n.pushes)
+        time.sleep(0.6)
+        self.assertEqual(len(n.pushes), settled)
+
+    def test_expire_covers_the_whole_nag_window(self):
+        """Pushover must keep re-alerting for as long as we intend to nag."""
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True,
+                      repeat=0.3, max_minutes=30)
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(0.2)
+        e.acknowledge()
+        self.assertEqual(n.expires[0], 1800)
+
+    def test_expire_caps_at_the_api_maximum(self):
+        n = FakeNotifier()
+        e = self._esc(n, escalate_after=99, twilio=False, persist=True,
+                      repeat=0.3, max_minutes=0)   # forever
+        e.trigger("cry", 0.9, "Baby cry, infant cry", cooldown=5)
+        time.sleep(0.2)
+        e.acknowledge()
+        self.assertEqual(n.expires[0], 10800)
+
+
+class TestPersistValidation(unittest.TestCase):
+    def test_rejects_storm_intervals(self):
+        c = base_cfg()
+        c.alerts.persist.repeat_seconds = 5
+        with self.assertRaisesRegex(ConfigError, "notification storm"):
+            validate(c)
+
+    def test_rejects_recall_faster_than_a_call(self):
+        c = base_cfg()
+        c.alerts.persist.recall_seconds = 10
+        with self.assertRaisesRegex(ConfigError, "faster than"):
+            validate(c)
+
+    def test_rejects_window_shorter_than_one_repeat(self):
+        c = base_cfg()
+        c.alerts.persist.repeat_seconds = 300
+        c.alerts.persist.max_minutes = 2
+        with self.assertRaisesRegex(ConfigError, "only ever get one alert"):
+            validate(c)
+
+    def test_defaults_are_valid(self):
+        validate(base_cfg())
 
 
 class TestTwiml(unittest.TestCase):

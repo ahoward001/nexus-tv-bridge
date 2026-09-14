@@ -14,13 +14,17 @@ nursery.** The cry classifier is a 4 MB model file that runs on your own CPU.
   mic ──► YAMNet cry classifier ──┐
                                   ├──► sustained? ──► ntfy + Pushover siren
   cam ──► motion detection ───────┘                        │
-                                                           │ no acknowledgement
-                                                           ▼  after 60 seconds
-                                                     your phone rings
+                                                           ├─ every 2 min: re-push
+                                                           ├─ after 60s: phone rings
+                                                           └─ every 5 min: rings again
+                                                                    │
+                                                        until you acknowledge
 ```
 
-Acknowledging — from the Pushover notification or the **Acknowledge** button
-on the live-view page — cancels the siren and stops the call.
+**It does not alert once and give up.** The siren repeats, the pushes repeat,
+and the phone keeps ringing until you acknowledge — from the Pushover
+notification or the **Acknowledge** button on the live-view page. One tap
+silences all of it.
 
 ## Install
 
@@ -46,20 +50,59 @@ To remove it: double-click **`uninstall.command`**.
 
 Enable as many as you like; blank entries are simply skipped.
 
-### Making the call unmissable on iPhone
+### Overriding silent mode and Focus (do both of these)
 
-A phone call is the only channel that reliably cuts through silent mode and
-Focus, and only if you tell iOS to let it:
+Two independent ways to make a silenced phone make noise. Set up both — they
+fail in different ways.
+
+**1. Pushover Critical Alerts.** Pushover holds Apple's critical-alert
+entitlement, which lets it ignore the hardware mute switch *and* Focus modes,
+and play at its own volume rather than yours. It is **off by default** and no
+API parameter turns it on — it is a receiver-side toggle you flip once:
+
+> Pushover app → **Settings** → **Notification Settings** → enable
+> **Critical Alerts** for emergency priority → approve the iOS dialog.
+
+Without that toggle a silenced phone stays silent, no matter what BabyMon
+sends. Since Pushover 4.2 the setting is split between high and emergency
+priority; BabyMon sends emergency, so make sure that one is on.
+
+**2. Twilio call with Emergency Bypass.**
 
 1. Save your Twilio number as a contact (e.g. "Nursery").
 2. Contact → **Edit** → **Ringtone** → turn on **Emergency Bypass**.
 
-That contact now rings at full volume regardless of the mute switch or any
-Focus mode. Do the same under **Text Tone** if you add SMS later.
+That contact now rings at full volume regardless of the mute switch or Focus.
 
-> Pushover's emergency priority is loud and repeats, but whether it overrides
-> the hardware mute switch depends on iOS's critical-alert entitlement. Don't
-> assume it does — the Twilio call is the guarantee.
+Belt and braces: Critical Alerts can be revoked by a stray tap in iOS
+Settings, and a call can be missed if cell service drops while wifi is fine.
+Running both means one covering the other.
+
+> ntfy has no critical-alert entitlement, so its push will *not* override a
+> muted phone. It is the free fast layer, not the guarantee.
+
+### Persistence
+
+Configured under `[alerts.persist]`:
+
+| Setting | Default | What it does |
+|---|---|---|
+| `repeat_seconds` | 120 | Re-push every 2 minutes |
+| `recall_seconds` | 300 | Dial again every 5 minutes |
+| `max_minutes` | 60 | Give up after an hour (`0` = never) |
+
+Repeat alerts change their wording to **"STILL CRYING — unacknowledged for 6
+minutes"**, so a glance tells you whether this is new or ongoing.
+
+Pushover is deliberately **not** re-sent on that interval. Its server already
+re-alerts every 30 seconds until you acknowledge, so re-sending would stack
+independent sirens rather than repeat one. The repeat interval drives ntfy,
+which has no retry of its own. Pushover's `expire` is sized automatically to
+cover your whole nag window, capped at their 3-hour API maximum.
+
+If `max_minutes` elapses with no acknowledgement, BabyMon stops and writes a
+loud line to the log. It cannot do anything more useful than that — which is
+the point at which somebody needs to physically check on the baby.
 
 ## Privacy and security
 
@@ -129,6 +172,11 @@ through a window will trip it; `0.06` is calmer for a bright nursery.
 **Being phoned too eagerly** — raise `escalate_after_seconds`, or set
 `escalate_motion_alerts = false` (the default) so only crying can call you.
 
+**Too much nagging** — raise `repeat_seconds` and `recall_seconds`, or set
+`persist.enabled = false` for a single alert with one follow-up call. The
+validator refuses intervals under 30s (push) and 60s (call), because an alert
+you mute out of irritation protects nobody.
+
 ## Known limitations — read these
 
 - **This is not a medical device.** It is a convenience monitor. Do not rely
@@ -157,7 +205,9 @@ python3 -m venv .venv && .venv/bin/pip install numpy requests
 .venv/bin/python tests/test_stream.py
 ```
 
-28 tests, no microphone, camera, or network needed — every external call is
-faked. They cover config validation (including refusing a public stream bind
-and a weak password), the detection heuristic, the full escalation ladder,
+40 tests, no microphone, camera, or network needed — every external call is
+faked. They cover config validation (including refusing a public stream bind,
+a weak password, and storm-inducing repeat intervals), the detection
+heuristic, the full escalation ladder, the persistent re-alert loop (repeats,
+acknowledgement stopping it, give-up behaviour, and Pushover expire sizing),
 and the live view's authentication boundary.

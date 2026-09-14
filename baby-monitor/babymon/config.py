@@ -80,9 +80,19 @@ class TwilioCfg:
 
 
 @dataclass
+class PersistCfg:
+    """Keep re-alerting until you actually acknowledge."""
+    enabled: bool = True
+    repeat_seconds: float = 120.0    # re-push this often
+    recall_seconds: float = 300.0    # re-call this often
+    max_minutes: float = 60.0        # give up after this long (0 = never)
+
+
+@dataclass
 class AlertsCfg:
     escalate_after_seconds: float = 60.0
     escalate_motion_alerts: bool = False
+    persist: PersistCfg = field(default_factory=PersistCfg)
     ntfy: NtfyCfg = field(default_factory=NtfyCfg)
     pushover: PushoverCfg = field(default_factory=PushoverCfg)
     twilio: TwilioCfg = field(default_factory=TwilioCfg)
@@ -131,6 +141,7 @@ def load(path: Path | None = None) -> Config:
     alerts.ntfy = _fill(NtfyCfg, alerts_raw.get("ntfy", {}))
     alerts.pushover = _fill(PushoverCfg, alerts_raw.get("pushover", {}))
     alerts.twilio = _fill(TwilioCfg, alerts_raw.get("twilio", {}))
+    alerts.persist = _fill(PersistCfg, alerts_raw.get("persist", {}))
 
     cfg = Config(
         detect=_fill(DetectCfg, raw.get("detect", {})),
@@ -214,6 +225,30 @@ def validate(cfg: Config) -> None:
             raise ConfigError(
                 "[stream] password must be at least 12 characters. Set a strong one "
                 "or disable the stream."
+            )
+
+    p = a.persist
+    if p.enabled:
+        if p.repeat_seconds < 30:
+            raise ConfigError(
+                "[alerts.persist] repeat_seconds below 30 is a notification storm. "
+                "You will mute the app, which defeats the point. Use 60 or more."
+            )
+        if p.recall_seconds < 60:
+            raise ConfigError(
+                "[alerts.persist] recall_seconds below 60 would dial you faster than "
+                "a call can complete. Use 120 or more."
+            )
+        if p.max_minutes and p.max_minutes * 60 < p.repeat_seconds:
+            raise ConfigError(
+                "[alerts.persist] max_minutes is shorter than repeat_seconds, so you "
+                "would only ever get one alert."
+            )
+        if p.max_minutes == 0:
+            print(
+                "[babymon] NOTE: persist.max_minutes is 0 -- alerts will repeat "
+                "forever until acknowledged.",
+                file=sys.stderr,
             )
 
     if not 0.0 < cfg.detect.cry_threshold < 1.0:

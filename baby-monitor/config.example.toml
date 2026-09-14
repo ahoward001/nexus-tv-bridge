@@ -52,6 +52,25 @@ escalate_after_seconds = 60
 # Motion-only events are less urgent -- never escalate them to a phone call.
 escalate_motion_alerts = false
 
+[alerts.persist]
+# Keep re-alerting until you actually acknowledge, rather than firing once
+# and hoping. Acknowledging (from the Pushover notification or the button on
+# the live-view page) silences everything immediately.
+enabled = true
+
+# How often to re-push. Pushover is NOT re-sent on this interval -- its own
+# server already re-alerts every retry_seconds until you acknowledge, so
+# re-sending would stack sirens instead of repeating one. This interval
+# drives ntfy, which has no retry of its own. Minimum 30s.
+repeat_seconds = 120
+
+# How often to dial you again after the first call. Minimum 60s.
+recall_seconds = 300
+
+# Stop nagging after this long and log loudly. 0 = never stop.
+# Note: Pushover's own retry is capped at 3 hours by their API regardless.
+max_minutes = 60
+
 [alerts.ntfy]
 # Free, no account. Install the ntfy app, subscribe to your topic.
 # TREAT THE TOPIC NAME AS A PASSWORD -- anyone who knows it can read your
