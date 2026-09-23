@@ -6,6 +6,54 @@ Newest first.
 
 ---
 
+## v5.4.0.2 — 2026-09-23
+
+**Three new columns: % of board, today's volume, and how long a level has been big.**
+
+All three are off by default — tick them in Settings → Columns and they appear on the chart. Hiding one still closes its gap, same as the existing three.
+
+**% of board** — this strike's share of all the |GEX| on the board. It's the best single predictor of whether a level holds that the bounce study found: strikes under 3% of the board held 31% of the time, strikes at 25%+ held **80%**. Worth knowing that Score, which sits in the column beside it, doesn't predict holding at all — it gates notifications.
+
+**Net vol (today)** — the open interest column is last night's print, so a strike that only came alive today is invisible in it by definition. This is the column that shows it. A strike with small OI and heavy volume is where today actually happened.
+
+**Age** — `N` new (under 30 min), `S` settling, `E` established (2h+), measuring how long the strike has been worth 10%+ of the board. In the bounce study a level big for 2h+ won **48%** of the time; one big for under 30 minutes won **24%**. Nothing else on the board shows this, because it needs a memory of what the board looked like an hour ago.
+
+**On how far to trust the age**, since it's built from your syncs rather than a continuous feed: checked against 776 continuous snapshots across 11 days, the badge is right **95.9%** of the time if you sync about every 15 minutes, 94.3% at 30, 86.7% hourly, 79.4% two-hourly. Every error runs one way — it reports a level as *younger* than it really is, never older, because a sync you didn't make can't show you something. Since `established` is the state that wins, it fails toward caution.
+
+The age history records on every sync whether or not the column is switched on, so turning it on later doesn't start from zero.
+
+### Recent
+
+**v5.3.0.1** — Clusters of lines now show. Two rules were hiding them
+
+**v5.2.5.1** — Everything it looks for now accepts English or Spanish
+
+**v5.2.4.1** — "Levels were age unknown when applied" — it couldn't read the clock any more
+
+**v5.2.3.1** — It was giving up on the strike table about ten seconds too early
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.3.0.1 — 2026-09-10
 
 **Clusters of lines now show. Two rules were hiding them.**
