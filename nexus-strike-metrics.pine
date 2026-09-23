@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 5.3.0.1
+// Nexus Strike Metrics for Nexus → TradingView Bridge 5.4.0.2
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -48,6 +48,18 @@ showLabels = input.bool(true,  "Show labels",  group = "Style")
 showScore  = input.bool(true, "Column: Score", group = "Columns")
 showOi     = input.bool(true, "Column: OI",    group = "Columns")
 showGex    = input.bool(true, "Column: GEX",   group = "Columns")
+// Added 2026-09-23. Default OFF: an existing chart looks exactly as it did until ticked.
+showShare  = input.bool(false, "Column: % of board", group = "Columns",
+     tooltip = "This strike's |GEX| as a share of the whole board. The best single predictor of " +
+     "whether a level holds: under 3% of the board held 31% of the time, 25%+ held 80%.")
+showVol    = input.bool(false, "Column: Net vol (today)", group = "Columns",
+     tooltip = "Net volume traded at this strike TODAY. Open interest is last night's print, so a " +
+     "strike that only came alive today is invisible in OI — this is the column that shows it.")
+showAge    = input.bool(false, "Column: Age", group = "Columns",
+     tooltip = "How long this strike has been big (>=10% of the board). N = new (<30 min), " +
+     "S = settling, E = established (2h+). Big for 2h+ won 48% of the time in the bounce study; " +
+     "big for under 30 min, 24%. Measured against continuous samples, the badge is right ~95% at a " +
+     "15-minute sync cadence and only ever errs YOUNG.")
 labelSizeI = input.string("Normal", "Label size", options = ["Tiny", "Small", "Normal", "Large"], group = "Style",
      tooltip = "One size for every row. Emphasis comes from color (key levels get colored boxes), not size.")
 sizeNum    = input.int(3, "Size override (buttons)", minval = 0, maxval = 5, group = "Style",
@@ -338,6 +350,12 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         // (older data) -> fall back to the score-driven popFrac.
                         oHeat    = array.size(f) > 7 and str.length(array.get(f, 7)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 7)) / 100.0)) : popFrac
                         gHeat    = array.size(f) > 8 and str.length(array.get(f, 8)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 8)) / 100.0)) : popFrac
+                        // Fields 9/10/11 — age code (0 none, 1 new, 2 settling, 3 established),
+                        // share of board as a whole percent, and today's net volume as text.
+                        // Absent on older data, which simply leaves those columns blank.
+                        ageCd    = array.size(f) > 9  and str.length(array.get(f, 9))  > 0 ? str.tonumber(array.get(f, 9))  : na
+                        shareV   = array.size(f) > 10 and str.length(array.get(f, 10)) > 0 ? str.tonumber(array.get(f, 10)) : na
+                        volTxt   = array.size(f) > 11 ? array.get(f, 11) : ""
                                                 // Score box HUE in three HARD bands by score value (Aidan): 30-49 YELLOW,
                         // 50-66 ORANGE, 66+ RED. No blue/pink anywhere — we ignore Nexus's own
                         // score color for the box. OI/GEX keep their sign color (green +, red -).
@@ -348,6 +366,17 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         scoreBg  = color.new(scoreHue, opacityOf(popFrac))
                         oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
                         gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
+                        // Share carries its own magnitude (0-100), so opacity IS the value.
+                        shFrac   = na(shareV) ? 0.0 : math.max(0.0, math.min(1.0, shareV / 100.0))
+                        shareBg  = color.new(color.teal, opacityOf(shFrac))
+                        // Volume is sign-coloured like OI/GEX. No heat is claimed for it: the
+                        // board-relative scale isn't sent, and inventing one would imply a
+                        // comparison that hasn't been made.
+                        volBg    = color.new(signGrad(volTxt, 0.62), opacityOf(0.62))
+                        // Age is three states, not a magnitude: gray / amber / green.
+                        ageHue   = na(ageCd) ? colGray : ageCd >= 3 ? color.green : ageCd >= 2 ? color.orange : colGray
+                        ageBg    = color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0))
+                        ageTxt   = na(ageCd) or ageCd < 1 ? "" : ageCd >= 3 ? "E" : ageCd >= 2 ? "S" : "N"
                         // Line matches the score band color (no Nexus blue/pink on the lines either).
                         lineCol  = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
 
@@ -374,6 +403,15 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                                 slot += 1
                             if showGex
                                 drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
+                                slot += 1
+                            if showShare
+                                drawBubble(labelOff + slot * bubbleGap, price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
+                                slot += 1
+                            if showVol
+                                drawBubble(labelOff + slot * bubbleGap, price, volTxt, txtOn(false), volBg, effSz, false)
+                                slot += 1
+                            if showAge
+                                drawBubble(labelOff + slot * bubbleGap, price, ageTxt, txtOn(not na(ageCd) and ageCd >= 3), ageBg, effSz, false)
 
     // Header row above the top level, labelling each column.
     if showTitle and enabled and not na(maxP)
@@ -387,3 +425,12 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
             hSlot += 1
         if showGex
             drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
+            hSlot += 1
+        if showShare
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "%BD")
+            hSlot += 1
+        if showVol
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "VOL")
+            hSlot += 1
+        if showAge
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "AGE")
