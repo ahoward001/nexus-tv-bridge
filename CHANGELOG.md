@@ -6,6 +6,58 @@ Newest first.
 
 ---
 
+## v5.5.0.2 — 2026-09-23
+
+**The panel expands, pins, and warns you when tension isn't saying what it usually says.**
+
+**▾ to expand.** Three more readings appear under the usual two:
+
+- **GRAD** — the GEX gradient in M/min
+- **ΔDEX** — net delta flow
+- **MOM** — momentum
+
+Each line is left out entirely when the read couldn't get it, rather than shown as zero — a missing line means "not available", never "nothing happening".
+
+**📌 to pin.** A pinned panel never fades on its own. Clicking the panel still dismisses it, so there's always a way out that doesn't involve hunting for the pin. Both the pin and the expanded state persist across syncs and page reloads.
+
+**Tension turns purple when price is within $1.50 of the gamma flip.** Sitting on the flip, tension collapses — 14 of 18 flip touches in the bounce study came in under 30, median 16 — and a low reading there means something different from a low reading anywhere else. Purple says "this number isn't measuring what it usually measures" instead of letting it read as calm. It overrides the dashboard's own colour for that reading.
+
+These four numbers are read from the dashboard's embedded data rather than off its cards, which makes them language-independent: they're JSON keys, not rendered labels, so they survive both the Spanish/English switch and the card reshuffles that have broken readings before.
+
+**Not included: gravity.** The dominant-structure level and the strike it points at aren't in the data the extension reads — they only exist on the NEXUS Gravity tab, and the local reconstruction gets the dominant level right about 91% of the time while the target reproduces at 27%. Adding it means the sync visiting a third view, which is where most of this month's breakage came from. Worth doing deliberately rather than quietly.
+
+### Recent
+
+**v5.4.1.2** — "Strike metrics didn't update" while the table was sitting right there on screen
+
+**v5.4.0.2** — Three new columns: % of board, today's volume, and how long a level has been big
+
+**v5.3.0.1** — Clusters of lines now show. Two rules were hiding them
+
+**v5.2.5.1** — Everything it looks for now accepts English or Spanish
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.4.1.2 — 2026-09-23
 
 **"Strike metrics didn't update" while the table was sitting right there on screen.**
