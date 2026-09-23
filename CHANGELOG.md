@@ -6,6 +6,68 @@ Newest first.
 
 ---
 
+## v6.1.1.4 — 2026-09-23
+
+**Gravity actually reads now. The parser was never the problem — the navigation was.**
+
+The gravity refresh button did nothing because the read could never succeed, so there was
+never anything to show. Two builds went out pointed at `?ticker=QQQ&tab=nexus-gravity`,
+and that URL on a fresh load renders **Overview** and stays there. The slug is right; the
+parameter simply does not drive the view on its own.
+
+The sidebar rail is a set of collapsed buttons that ignore synthetic clicks. But the same
+component also renders a real `<select>` view picker, with one `<option>` per view carrying
+the exact slug. Setting its value through the native setter and firing `change` is React's
+own code path: the app navigates properly and the URL updates to match. That picker is the
+reliable handle on **every** Nexus view, not just gravity — Max Pain, vGEX Pro and Delta
+Map are all reachable the same way if we want them later.
+
+Run against the live view, the parser was clean first try:
+
+- Active gravity — DOMINANT STRUCTURE @ 739
+- Reach candidate — 740, model touch probability 94.7%
+- Strongest bull 746, strongest bear 739
+
+The switch is retried until it takes, because the picker does not exist until the shell has
+hydrated, and the whole read now gets 35 seconds — page load, then view switch, then
+render. All of it still off the sync path, still one tab at a time, still backed off on
+failure, so none of that time is ever yours.
+
+**What this does not change:** gravity is still read on a 20-minute interval and served
+from cache, and the ⟳ beside the number is still what forces a fresh look.
+
+### Recent
+
+**v6.1.0.4** — Flow and momentum are on the panel — and they were on the Overview page the whole time
+
+**v6.0.1.4** — Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry
+
+**v6.0.0.4** — Gravity is on the chart
+
+**v5.6.0.3** — A DEX column, and real board-relative shading on % of board and Net vol
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.1.0.4 — 2026-09-23
 
 **Flow and momentum are on the panel — and they were on the Overview page the whole time.**
