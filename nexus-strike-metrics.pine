@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 5.6.0.3
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.0.0.4
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -58,6 +58,23 @@ showShare  = input.bool(false, "Column: % of board", group = "Columns",
 showVol    = input.bool(false, "Column: Net vol (today)", group = "Columns",
      tooltip = "Net volume traded at this strike TODAY. Open interest is last night's print, so a " +
      "strike that only came alive today is invisible in OI — this is the column that shows it.")
+// ---- gravity ----------------------------------------------------------------
+// The active gravity level, written in by the extension. It lives on its own Nexus tab
+// and moves a handful of times a session, so it is read on a long interval rather than
+// on every sync, and there is a reload button beside it on the floating panel.
+showGrav   = input.bool(true, "Show gravity level", group = "Gravity",
+     tooltip = "A bold line at Nexus's ACTIVE gravity level, with an arrow showing which way it " +
+     "is pulling from here and how long it has held.")
+gravCol    = input.color(#7C4DFF, "Gravity color", group = "Gravity")
+gravWidth  = input.int(3, "Gravity line width", minval = 1, maxval = 8, group = "Gravity",
+     tooltip = "Deliberately heavier than the strike lines — it is one level, not one of twenty.")
+gravLabOff = input.int(3, "Gravity label offset (bars right)", minval = 0, maxval = 80, group = "Gravity")
+showReach  = input.bool(true, "Mark the reach target", group = "Gravity",
+     tooltip = "Nexus's highest-touch-probability level, drawn thin and dashed. This is what the " +
+     "gravity arrow points AT: gravity says where the pull is, reach says where it most likely goes.")
+gravData   = input.string("", "Gravity data", group = "Gravity",
+     tooltip = "Filled by the extension: level:classification:touch%:target:minutes-held. " +
+     "Leave it alone unless you are testing by hand.")
 showAge    = input.bool(false, "Column: Age", group = "Columns",
      tooltip = "How long this strike has been big (>=10% of the board). N = new (<30 min), " +
      "S = settling, E = established (2h+). Big for 2h+ won 48% of the time in the bounce study; " +
@@ -103,12 +120,15 @@ SCORE_NUDGE = 0.25
 // Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
 // instead of drifting out of proportion when you widen the columns.
 GEX_NUDGE = -0.08
-// %BD holds "17%" against OI/GEX/DEX's "-29.4M", so the same bar spacing leaves a visibly
-// wider lane after it and the column reads detached from the block it belongs to. Shifted
-// right by a fifth of a gap for the same reason Score is: it corrects a width artefact,
-// not a preference, so it is a constant rather than another slider. Applied to the header
-// too, or the label stops sitting over its own column.
-SHARE_NUDGE = 0.2
+// %BD holds "1%" or "16%" against OI/GEX/DEX's "-29.4M", so at a uniform lane width it
+// floats in whitespace and reads detached from the block it belongs to. Nudging it sideways
+// doesn't fix that — it just moves the hole to the other side. What it needs is a NARROWER
+// LANE, so the column after it starts sooner and the whole block tightens up. 0.62 is the
+// rough width ratio of "16%" to "-29.4M" at the same font.
+//
+// This is why `slot` is a float: advancing it by a fraction is the whole mechanism. Every
+// offset is rounded at the point of use, because drawBubble takes bar offsets as ints.
+SHARE_SLOT = 0.62
 // Whole bars, not a fraction: this is compensating for a fixed pixel effect (label width),
 // not for anything that scales with column spacing.
 //
@@ -296,9 +316,15 @@ drawHeader(float off, float price, string txt) =>
 // and the bar we anchor to, so redraw ONLY when one of those actually changes.
 var string lastSrc = na
 var int    lastBar = na
-if barstate.islast and (src != lastSrc or bar_index != lastBar)
+// gravData is written on its OWN cadence (a long interval, or the panel's reload button),
+// so it has to be part of the change test. Without it, a gravity level that moved between
+// bars would not appear until the next bar closed — up to five minutes of the chart
+// showing a level Nexus had already replaced.
+var string lastGrav = na
+if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != lastGrav)
     lastSrc := src
     lastBar := bar_index
+    lastGrav := gravData
     // NOTE: guard the loops. In Pine `for i = 0 to -1` counts DOWN and executes,
     // so an unguarded loop over an empty array is a real bug, not a no-op.
     if array.size(lns) > 0
@@ -373,6 +399,10 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         volHeatV = array.size(f) > 13 and str.length(array.get(f, 13)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 13)) / 100.0)) : na
                         dexTxt   = array.size(f) > 14 ? array.get(f, 14) : ""
                         dHeat    = array.size(f) > 15 and str.length(array.get(f, 15)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 15)) / 100.0)) : 0.0
+                        // Field 16 — how many MINUTES the strike has been big, so the column can
+                        // print the actual duration instead of a letter. The letter is still what
+                        // drives the colour (field 9), so the two can never disagree.
+                        ageMinV  = array.size(f) > 16 and str.length(array.get(f, 16)) > 0 ? str.tonumber(array.get(f, 16)) : na
                                                 // Score box HUE in three HARD bands by score value (Aidan): 30-49 YELLOW,
                         // 50-66 ORANGE, 66+ RED. No blue/pink anywhere — we ignore Nexus's own
                         // score color for the box. OI/GEX keep their sign color (green +, red -).
@@ -399,7 +429,17 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         // Age is three states, not a magnitude: gray / amber / green.
                         ageHue   = na(ageCd) ? colGray : ageCd >= 3 ? color.green : ageCd >= 2 ? color.orange : colGray
                         ageBg    = color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0))
-                        ageTxt   = na(ageCd) or ageCd < 1 ? "" : ageCd >= 3 ? "E" : ageCd >= 2 ? "S" : "N"
+                        // THE DURATION, NOT A LETTER YOU HAVE TO DECODE.
+                        //
+                        // N/S/E needed a legend every time; "45m" and "3.5h" do not, and they also
+                        // separate a level that just crossed two hours from one that has held all
+                        // session — both of which used to print the same "E". The colour still comes
+                        // from the band (gray / amber / green), so the glance read is unchanged.
+                        // Under an hour reads in minutes; above it, in hours to one decimal with a
+                        // bare "2h" when it lands flat. Falls back to the letter on older data.
+                        ageHrs   = na(ageMinV) ? na : ageMinV / 60.0
+                        ageLong  = na(ageMinV) ? "" : ageMinV < 60 ? str.tostring(math.round(ageMinV)) + "m" : str.tostring(math.round(ageHrs * 10) / 10, "#.#") + "h"
+                        ageTxt   = na(ageCd) or ageCd < 1 ? "" : str.length(ageLong) > 0 ? ageLong : (ageCd >= 3 ? "E" : ageCd >= 2 ? "S" : "N")
                         // Line matches the score band color (no Nexus blue/pink on the lines either).
                         lineCol  = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
 
@@ -417,49 +457,93 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                             sTxt = str.length(score) > 0 ? score : str.tostring(price, format.mintick)
                             // `slot` advances only for columns actually drawn, so turning
                             // one off closes the gap instead of leaving a blank lane.
-                            slot = 0
+                            slot = 0.0
                             if showScore
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap) + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, false)
+                                slot += 1.0
                             if showOi
-                                drawBubble(labelOff + slot * bubbleGap, price, oi, txtOn(oHeat >= 0.62), oiBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap), price, oi, txtOn(oHeat >= 0.62), oiBg, effSz, false)
+                                slot += 1.0
                             if showGex
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap) + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
+                                slot += 1.0
                             if showDex
-                                drawBubble(labelOff + slot * bubbleGap, price, dexTxt, txtOn(dHeat >= 0.62), dexBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap), price, dexTxt, txtOn(dHeat >= 0.62), dexBg, effSz, false)
+                                slot += 1.0
                             if showShare
-                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SHARE_NUDGE), price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap), price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
+                                slot += SHARE_SLOT
                             if showVol
-                                drawBubble(labelOff + slot * bubbleGap, price, volTxt, txtOn(vFrac >= 0.62), volBg, effSz, false)
-                                slot += 1
+                                drawBubble(labelOff + math.round(slot * bubbleGap), price, volTxt, txtOn(vFrac >= 0.62), volBg, effSz, false)
+                                slot += 1.0
                             if showAge
-                                drawBubble(labelOff + slot * bubbleGap, price, ageTxt, txtOn(not na(ageCd) and ageCd >= 3), ageBg, effSz, false)
+                                drawBubble(labelOff + math.round(slot * bubbleGap), price, ageTxt, txtOn(not na(ageCd) and ageCd >= 3), ageBg, effSz, false)
 
     // Header row above the top level, labelling each column.
     if showTitle and enabled and not na(maxP)
         titleP = maxP + math.max((maxP - minP) * hdrGapPct / 100.0, maxP * 0.0008)
-        hSlot = 0
+        hSlot = 0.0
         if showScore
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * SCORE_NUDGE), titleP, "SCORE")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift + math.round(bubbleGap * SCORE_NUDGE), titleP, "SCORE")
+            hSlot += 1.0
         if showOi
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "OI")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "OI")
+            hSlot += 1.0
         if showGex
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
+            hSlot += 1.0
         if showDex
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "DEX")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "DEX")
+            hSlot += 1.0
         if showShare
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * SHARE_NUDGE), titleP, "%BD")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "%BD")
+            hSlot += SHARE_SLOT
         if showVol
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "VOL")
-            hSlot += 1
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "VOL")
+            hSlot += 1.0
         if showAge
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "AGE")
+            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "AGE")
+
+    // ---- the gravity level ------------------------------------------------
+    //
+    // Drawn from its own input rather than from the strike string, because it is read on
+    // a different cadence and must survive a sync that didn't refresh it.
+    if showGrav and str.length(gravData) > 0
+        gf     = str.split(gravData, ":")
+        gPrice = array.size(gf) > 0 and str.length(array.get(gf, 0)) > 0 ? str.tonumber(array.get(gf, 0)) : na
+        gKlass = array.size(gf) > 1 ? array.get(gf, 1) : ""
+        gProb  = array.size(gf) > 2 and str.length(array.get(gf, 2)) > 0 ? str.tonumber(array.get(gf, 2)) : na
+        gTgt   = array.size(gf) > 3 and str.length(array.get(gf, 3)) > 0 ? str.tonumber(array.get(gf, 3)) : na
+        gHeld  = array.size(gf) > 4 and str.length(array.get(gf, 4)) > 0 ? str.tonumber(array.get(gf, 4)) : na
+        if not na(gPrice)
+            gLine = line.new(bar_index - 1, gPrice, bar_index, gPrice,
+                 extend = extend.both, color = gravCol, width = gravWidth, style = line.style_solid)
+            array.push(lns, gLine)
+            // The arrow points the way the level sits FROM HERE — up if price has to rise to
+            // reach it, down if it has to fall. Same duration format as the AGE column.
+            gUp    = gPrice > close
+            gAge   = na(gHeld) ? "" : gHeld < 60 ? str.tostring(math.round(gHeld)) + "m" : str.tostring(math.round(gHeld / 6.0) / 10, "#.#") + "h"
+            gTxt   = (gUp ? "▲" : "▼") + " GRAVITY " + str.tostring(gPrice, format.mintick) +
+                 (na(gProb) ? "" : " · " + str.tostring(math.round(gProb)) + "%") +
+                 (str.length(gAge) > 0 ? " · held " + gAge : "") +
+                 (str.length(gKlass) > 0 ? "\n" + gKlass : "")
+            gLab = label.new(bar_index + gravLabOff, gPrice, gTxt,
+                 style     = label.style_label_left,
+                 color     = gravCol,
+                 textcolor = color.white,
+                 size      = sizeOf(effSz),
+                 text_font_family = heavyFont ? font.family_monospace : font.family_default)
+            array.push(lbs, gLab)
+            // The reach target, thin and dashed so it can never be mistaken for the level
+            // itself, with an arrow back toward where the pull is coming from.
+            if showReach and not na(gTgt) and gTgt != gPrice
+                rLine = line.new(bar_index - 1, gTgt, bar_index, gTgt,
+                     extend = extend.both, color = color.new(gravCol, 45), width = 1, style = line.style_dashed)
+                array.push(lns, rLine)
+                rLab = label.new(bar_index + gravLabOff, gTgt, "→ reach " + str.tostring(gTgt, format.mintick),
+                     style     = label.style_label_left,
+                     color     = color.new(gravCol, 45),
+                     textcolor = color.white,
+                     size      = sizeOf("Tiny"),
+                     text_font_family = heavyFont ? font.family_monospace : font.family_default)
+                array.push(lbs, rLab)
