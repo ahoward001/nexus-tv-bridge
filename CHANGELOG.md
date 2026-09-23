@@ -6,6 +6,67 @@ Newest first.
 
 ---
 
+## v6.1.0.4 — 2026-09-23
+
+**Flow and momentum are on the panel — and they were on the Overview page the whole time.**
+
+I said twice that this data wasn't on that view. I was reading the inlined server payload,
+where `institutionalFlow` is `{ points: [], stats: { momentum: 0, netDeltaFlow: 0 } }` —
+all zeros, because the series is built client-side from the socket. The rendered panel has
+had the numbers all along. Aidan said it was there; it was there.
+
+It also turned out to be **lazily mounted** far down the page, so it is genuinely absent
+from the DOM until something scrolls near it. The reader scrolls down in steps to mount it,
+reads, and puts the scroll position back where it was — a single jump to the bottom can
+sail past the trigger without ever intersecting it.
+
+No extra tab and no view change: this comes off the same Overview tab the sync already
+reads. It is bounded at 6 seconds and non-fatal, so it can never be why a sync fails.
+
+**Panel now shows FLOW and MOM**, both in thousands so they rank against each other, with
+momentum carrying its window ("MOM 1M") — a 1-minute and a 5-minute reading are not the
+same measurement, and the bare number means nothing without it.
+
+One parsing note worth keeping: every figure in that panel carries an explicit sign, and
+the parse *requires* it. The momentum label is "Momentum 1M" — a one-minute window, not a
+megadollar value — and an unsigned pattern read that "1M" as the number and reported
+momentum as +1,000,000.
+
+**Gravity is still not drawing.** It needs its own view, and that view is not reachable by
+URL — `?tab=nexus-gravity` loads Overview. Next.
+
+### Recent
+
+**v6.0.1.4** — Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry
+
+**v6.0.0.4** — Gravity is on the chart
+
+**v5.6.0.3** — A DEX column, and real board-relative shading on % of board and Net vol
+
+**v5.5.4.2** — An empty legend on a tab that isn't painting is no longer read as "the indicator is missing."
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.0.1.4 — 2026-09-23
 
 **Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry.**
