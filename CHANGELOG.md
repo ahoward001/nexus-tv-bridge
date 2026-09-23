@@ -6,6 +6,50 @@ Newest first.
 
 ---
 
+## v5.5.3.2 — 2026-09-23
+
+**The panel's ΔDEX and MOM rows both read +0. One was the wrong field; the other isn't there.**
+
+**Net delta was reading the wrong key.** It used `netDeltaFlow`, which is zero on the view the extension reads. The real figure — the same one the dashboard's own **NET DEX** card shows — is `net_dex`, currently −2.3B. That's what it reads now.
+
+**Momentum genuinely isn't available there.** It belongs to the IFI panel and reads zero everywhere else, so the zero meant "that panel isn't loaded on this view", not "no momentum". Showing it as `+0` stated something false with total confidence. The row is now omitted when there's no value, so a missing line means missing rather than nothing-happening.
+
+Getting momentum for real means the sync reading the IFI view, the same third-view question as gravity — worth doing deliberately, on an interval, rather than adding a fourth page visit to every sync.
+
+The GEX gradient was correct all along.
+
+### Recent
+
+**v5.5.2.2** — The extension has been updating the wrong copy of your indicator
+
+**v5.5.1.2** — The panel's expander did nothing. Now it works
+
+**v5.5.0.2** — The panel expands, pins, and warns you when tension isn't saying what it usually says
+
+**v5.4.1.2** — "Strike metrics didn't update" while the table was sitting right there on screen
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.5.2.2 — 2026-09-23
 
 **The extension has been updating the wrong copy of your indicator.**
