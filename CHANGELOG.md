@@ -6,6 +6,68 @@ Newest first.
 
 ---
 
+## v6.0.0.4 — 2026-09-23
+
+**Gravity is on the chart.**
+
+A bold line at Nexus's ACTIVE gravity level, an arrow showing which way it sits from here,
+and how long it has held — plus, thin and dashed, the reach target it points at. Gravity
+says where the pull is; reach says where it most likely goes.
+
+It lives on its own Nexus tab and takes ~7s to render, so it is deliberately NOT on the
+sync path — that would put seven seconds onto every click for a number that moves a few
+times a session. It is read on a 20-minute interval in a tab of its own (opened inactive,
+closed straight after, so the dashboard tab you're looking at is never moved), cached, and
+there is a **⟳ button beside the number on the panel** that goes and looks right then.
+
+The classification is read as whatever uppercase run sits between the heading and the
+price, not matched against a fixed list. Matching the list is exactly the bug that left
+the recorder's gravity column empty on 40% of its snapshots — the label rotates between
+DOMINANT STRUCTURE, REACH CANDIDATE and CONFLUENCE, and only two were ever matched.
+
+**The AGE column prints the actual duration now** — "45m", "3.5h" — instead of N/S/E. The
+letters needed a legend every time, and they also flattened a level that just crossed two
+hours together with one that has held all session; both printed "E". The colour still
+comes from the same band, so the glance read is unchanged.
+
+**% of board gets a narrower lane.** It holds "1%" or "16%" against its neighbours'
+"-29.4M", so at a uniform lane width it floated in whitespace and read detached. Nudging
+it sideways only moved the hole to the other side — the fix is a 0.62-width slot, so the
+column after it starts sooner and the whole block tightens. `slot` is a float now; that
+fractional advance is the whole mechanism.
+
+### Recent
+
+**v5.6.0.3** — A DEX column, and real board-relative shading on % of board and Net vol
+
+**v5.5.4.2** — An empty legend on a tab that isn't painting is no longer read as "the indicator is missing."
+
+**v5.5.3.2** — The panel's ΔDEX and MOM rows both read +0. One was the wrong field; the other isn't there
+
+**v5.5.2.2** — The extension has been updating the wrong copy of your indicator
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.6.0.3 — 2026-09-23
 
 **A DEX column, and real board-relative shading on % of board and Net vol.**
