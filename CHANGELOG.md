@@ -6,6 +6,63 @@ Newest first.
 
 ---
 
+## v6.0.1.4 — 2026-09-23
+
+**Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry.**
+
+Three separate mistakes, each of which alone would have caused it:
+
+1. **The gravity read was awaited inside the sync.** The whole point of reading gravity
+   separately was that it must never cost you seven seconds on a click — and then it was
+   called, and awaited, on the one path that can't wait. Runs went to 23s and started
+   failing outright. The sync now reads gravity from **cache only**; the refresh happens
+   afterwards, off to the side, and nothing you see ever waits on it.
+2. **The URL was wrong.** The slug is `nexus-gravity`, not `gravity`. The wrong address
+   loads the default view, so the reader never found the heading and never cached anything.
+3. **A failed read was never recorded**, so the cache TTL never started and the next sync
+   tried again immediately. Failures are now backed off — 5 minutes, then 10, then 20,
+   capped at 30 — and only one gravity tab can ever be open at a time.
+
+**A red button now says what actually went wrong.** "failed — see the notification" is
+useless when macOS swallowed the banner or the failure came from a path that never raised
+one. The hover names the reason, or says plainly that none was reported.
+
+**Net DEX is off the panel.** One board-wide delta number told you nothing actionable; the
+thing worth having is DEX *per strike*, which is a column — tick **DEX** in Options. The
+panel row is now FLOW and MOM, which fill in once the institutional-flow read lands.
+
+### Recent
+
+**v6.0.0.4** — Gravity is on the chart
+
+**v5.6.0.3** — A DEX column, and real board-relative shading on % of board and Net vol
+
+**v5.5.4.2** — An empty legend on a tab that isn't painting is no longer read as "the indicator is missing."
+
+**v5.5.3.2** — The panel's ΔDEX and MOM rows both read +0. One was the wrong field; the other isn't there
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.0.0.4 — 2026-09-23
 
 **Gravity is on the chart.**
