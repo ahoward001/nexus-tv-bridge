@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 5.5.4.2
+// Nexus Strike Metrics for Nexus → TradingView Bridge 5.6.0.3
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -49,6 +49,9 @@ showScore  = input.bool(true, "Column: Score", group = "Columns")
 showOi     = input.bool(true, "Column: OI",    group = "Columns")
 showGex    = input.bool(true, "Column: GEX",   group = "Columns")
 // Added 2026-09-23. Default OFF: an existing chart looks exactly as it did until ticked.
+showDex    = input.bool(false, "Column: DEX", group = "Columns",
+     tooltip = "Net dealer delta at this strike. GEX says how hard dealers defend the level; " +
+     "DEX says which way they are already leaning into it.")
 showShare  = input.bool(false, "Column: % of board", group = "Columns",
      tooltip = "This strike's |GEX| as a share of the whole board. The best single predictor of " +
      "whether a level holds: under 3% of the board held 31% of the time, 25%+ held 80%.")
@@ -100,6 +103,12 @@ SCORE_NUDGE = 0.25
 // Both nudges are fractions of `bubbleGap`, so they scale with the spacing slider
 // instead of drifting out of proportion when you widen the columns.
 GEX_NUDGE = -0.08
+// %BD holds "17%" against OI/GEX/DEX's "-29.4M", so the same bar spacing leaves a visibly
+// wider lane after it and the column reads detached from the block it belongs to. Shifted
+// right by a fifth of a gap for the same reason Score is: it corrects a width artefact,
+// not a preference, so it is a constant rather than another slider. Applied to the header
+// too, or the label stops sitting over its own column.
+SHARE_NUDGE = 0.2
 // Whole bars, not a fraction: this is compensating for a fixed pixel effect (label width),
 // not for anything that scales with column spacing.
 //
@@ -356,6 +365,14 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         ageCd    = array.size(f) > 9  and str.length(array.get(f, 9))  > 0 ? str.tonumber(array.get(f, 9))  : na
                         shareV   = array.size(f) > 10 and str.length(array.get(f, 10)) > 0 ? str.tonumber(array.get(f, 10)) : na
                         volTxt   = array.size(f) > 11 ? array.get(f, 11) : ""
+                        // Fields 12-15 — board-relative heat for share and volume, then DEX
+                        // and its own heat. Absent on older data: share falls back to its own
+                        // magnitude, volume to the flat mid-tone it used before there was a
+                        // scale to claim, and the DEX column simply draws blank.
+                        shHeatV  = array.size(f) > 12 and str.length(array.get(f, 12)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 12)) / 100.0)) : na
+                        volHeatV = array.size(f) > 13 and str.length(array.get(f, 13)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 13)) / 100.0)) : na
+                        dexTxt   = array.size(f) > 14 ? array.get(f, 14) : ""
+                        dHeat    = array.size(f) > 15 and str.length(array.get(f, 15)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 15)) / 100.0)) : 0.0
                                                 // Score box HUE in three HARD bands by score value (Aidan): 30-49 YELLOW,
                         // 50-66 ORANGE, 66+ RED. No blue/pink anywhere — we ignore Nexus's own
                         // score color for the box. OI/GEX keep their sign color (green +, red -).
@@ -366,13 +383,19 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                         scoreBg  = color.new(scoreHue, opacityOf(popFrac))
                         oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
                         gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
-                        // Share carries its own magnitude (0-100), so opacity IS the value.
-                        shFrac   = na(shareV) ? 0.0 : math.max(0.0, math.min(1.0, shareV / 100.0))
+                        // Share and volume are now graded against the board, exactly like OI
+                        // and GEX: the extension sends the relative heat and the box just
+                        // renders it. Before this, share scaled against a flat 100 (so a
+                        // normal board never got past pale) and volume claimed no scale at
+                        // all (so every strike printed at one mid-tone and the column ranked
+                        // nothing). Both fall back to the old behaviour on older data.
+                        shFrac   = na(shHeatV) ? (na(shareV) ? 0.0 : math.max(0.0, math.min(1.0, shareV / 100.0))) : shHeatV
                         shareBg  = color.new(color.teal, opacityOf(shFrac))
-                        // Volume is sign-coloured like OI/GEX. No heat is claimed for it: the
-                        // board-relative scale isn't sent, and inventing one would imply a
-                        // comparison that hasn't been made.
-                        volBg    = color.new(signGrad(volTxt, 0.62), opacityOf(0.62))
+                        vFrac    = na(volHeatV) ? 0.62 : volHeatV
+                        volBg    = color.new(signGrad(volTxt, vFrac), opacityOf(vFrac))
+                        // DEX is a signed magnitude like GEX, so it reads the same way:
+                        // green long / red short, intensity by size against the board.
+                        dexBg    = color.new(signGrad(dexTxt, dHeat), opacityOf(dHeat))
                         // Age is three states, not a magnitude: gray / amber / green.
                         ageHue   = na(ageCd) ? colGray : ageCd >= 3 ? color.green : ageCd >= 2 ? color.orange : colGray
                         ageBg    = color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0))
@@ -404,11 +427,14 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
                             if showGex
                                 drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
                                 slot += 1
+                            if showDex
+                                drawBubble(labelOff + slot * bubbleGap, price, dexTxt, txtOn(dHeat >= 0.62), dexBg, effSz, false)
+                                slot += 1
                             if showShare
-                                drawBubble(labelOff + slot * bubbleGap, price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
+                                drawBubble(labelOff + slot * bubbleGap + math.round(bubbleGap * SHARE_NUDGE), price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
                                 slot += 1
                             if showVol
-                                drawBubble(labelOff + slot * bubbleGap, price, volTxt, txtOn(false), volBg, effSz, false)
+                                drawBubble(labelOff + slot * bubbleGap, price, volTxt, txtOn(vFrac >= 0.62), volBg, effSz, false)
                                 slot += 1
                             if showAge
                                 drawBubble(labelOff + slot * bubbleGap, price, ageTxt, txtOn(not na(ageCd) and ageCd >= 3), ageBg, effSz, false)
@@ -426,8 +452,11 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar)
         if showGex
             drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
             hSlot += 1
+        if showDex
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "DEX")
+            hSlot += 1
         if showShare
-            drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "%BD")
+            drawHeader(labelOff + hSlot * bubbleGap + hdrShift + math.round(bubbleGap * SHARE_NUDGE), titleP, "%BD")
             hSlot += 1
         if showVol
             drawHeader(labelOff + hSlot * bubbleGap + hdrShift, titleP, "VOL")
