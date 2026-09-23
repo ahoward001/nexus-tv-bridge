@@ -6,6 +6,48 @@ Newest first.
 
 ---
 
+## v5.5.1.2 — 2026-09-23
+
+**The panel's expander did nothing. Now it works.**
+
+The three readings it was meant to reveal — GEX gradient, net delta flow, momentum — were being read by the wrong half of the extension. They came from a function whose result the panel never receives, so every extra row was simply absent and expanding opened an empty half. The arrow toggled and nothing appeared.
+
+They're now read where the panel can actually see them.
+
+The underlying mistake is one worth naming, because it has caused three separate bugs this month: the parts of this extension that run inside the dashboard page are each shipped over there **on their own**, so a helper written in one is invisible to the others even though they sit in the same file. Each needs its own copy. That's what broke the strike columns two weeks ago and it's what broke this.
+
+### Recent
+
+**v5.5.0.2** — The panel expands, pins, and warns you when tension isn't saying what it usually says
+
+**v5.4.1.2** — "Strike metrics didn't update" while the table was sitting right there on screen
+
+**v5.4.0.2** — Three new columns: % of board, today's volume, and how long a level has been big
+
+**v5.3.0.1** — Clusters of lines now show. Two rules were hiding them
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.5.0.2 — 2026-09-23
 
 **The panel expands, pins, and warns you when tension isn't saying what it usually says.**
