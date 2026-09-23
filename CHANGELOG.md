@@ -6,6 +6,56 @@ Newest first.
 
 ---
 
+## v5.5.4.2 — 2026-09-23
+
+**An empty legend on a tab that isn't painting is no longer read as "the indicator is missing."**
+
+The installer waits for the chart's Pine button before reading the legend, but that button
+exists long before the studies do — and a tab that is occluded (another app in front, or
+another tab selected) never paints them at all. So a chart that already had Nexus Strike
+Metrics on it reported zero instances and got offered a fresh install. One click on that
+offer adds the second copy this installer exists to prevent.
+
+It now treats that case as *unknown* rather than *missing*: if the legend is empty while
+the tab isn't visible, it says so in the console and re-reads once the tab is actually
+shown. Nothing that would have worked before is blocked — only the wrong conclusion is.
+
+This is not a reversal of the "gate on whether it renders, not on `document.hidden`" rule
+from the editor. There, `hidden` lied about an editor that was rendering fine. Here it is
+the direct cause of an empty legend, and the honest answer is that we can't tell yet.
+
+### Recent
+
+**v5.5.3.2** — The panel's ΔDEX and MOM rows both read +0. One was the wrong field; the other isn't there
+
+**v5.5.2.2** — The extension has been updating the wrong copy of your indicator
+
+**v5.5.1.2** — The panel's expander did nothing. Now it works
+
+**v5.5.0.2** — The panel expands, pins, and warns you when tension isn't saying what it usually says
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v5.5.3.2 — 2026-09-23
 
 **The panel's ΔDEX and MOM rows both read +0. One was the wrong field; the other isn't there.**
