@@ -6,6 +6,65 @@ Newest first.
 
 ---
 
+## v6.3.1.4 — 2026-09-24
+
+**Replaces yesterday's self-reload with the recorder's, which has been doing this properly
+for months.**
+
+6.3.0.4 invented a mechanism instead of looking at the one already running next door. The
+recorder's is better in three ways that matter, and this adopts it wholesale:
+
+- **`build.json` carries the SHA-256 of every file**, and all of them must match before a
+  reload. The version string alone is not evidence a build is finished — a release rewrites
+  files one at a time, so it can be read while the folder is still half-written, and
+  reloading then loads a broken extension. My "see the same version twice" check was a
+  weak stand-in for exactly this.
+- **`manifest.json` must agree with `build.json`** before the hashes are even worth
+  checking. If it still says the old version, the folder is mid-write.
+- **At most one self-reload per 10 minutes.** A bad publish can otherwise become a reload
+  loop, and an extension that reloads itself every minute is far worse than a stale one.
+
+`package.sh` now writes `build.json` last, after every stamp, because it is the ready flag.
+
+**A correction to the 6.3.0.4 notes:** they claimed Chrome serves `manifest.json` from its
+own in-memory copy of the loaded extension, so it "would always agree with itself and never
+trigger" — which is why that version read the Pine header instead. That is wrong. The
+recorder reads `manifest.json` off disk and compares it against `build.json` precisely to
+catch a half-synced folder, and has done for months. The manifest is read from disk like
+any other packaged file.
+
+### Recent
+
+**v6.3.0.4** — The extension reloads itself when a new build lands. No more "now go reload it"
+
+**v6.2.0.4** — Every column now decides for itself which strikes are worth showing
+
+**v6.1.1.4** — Gravity actually reads now. The parser was never the problem — the navigation was
+
+**v6.1.0.4** — Flow and momentum are on the panel — and they were on the Overview page the whole time
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.3.0.4 — 2026-09-24
 
 **The extension reloads itself when a new build lands. No more "now go reload it".**
