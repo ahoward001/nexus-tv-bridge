@@ -6,6 +6,84 @@ Newest first.
 
 ---
 
+## v6.2.0.4 — 2026-09-24
+
+**Every column now decides for itself which strikes are worth showing.**
+
+The single global "how many levels" dropdown is gone. In its place, each column in Options
+carries its own rule, right beside its checkbox:
+
+- **All levels**
+- **Top half** — by that column's own magnitude, not by score
+- **Significant only** — the strikes our line rules pick out **plus the exported levels**
+- **Custom** — two blanks: "% over avg" and/or a flat "≥ this"
+
+**A strike is drawn if *any* enabled column says yes — and when it is, you get its whole
+row.** That union is the point: OI can be the reason a level appears even when its score is
+nothing, and a column you filtered on is not much use sitting next to six blanks.
+
+**The old "significant" setting had a real flaw, and this fixes it.** It used the line
+rules alone — but `selectSignificant` deliberately *excludes* anything the export already
+draws, so choosing it silently dropped the Call Wall, Put Wall and Gamma Flip bubbles: the
+three levels most worth reading. "Significant only" now means lines **and** exported levels,
+which is what it should always have meant.
+
+Details worth knowing:
+
+- **Top half ranks by size, not sign.** A −40M wall and a +40M wall are equally worth
+  seeing; ranking signed would sort every put wall to the bottom.
+- **"% over avg" is measured against the average across strikes that actually have a value.**
+  Including the zeros drags the mean down until "20% above average" means "almost anything".
+- **Both blanks empty = the column doesn't vote.** A rule you left empty should not quietly
+  become "show me all of it". If nothing votes at all, it falls back to lines + exported
+  walls rather than drawing an empty chart and calling it a setting.
+- **A lined level is never filtered out**, whatever the rules say. A line means the strike
+  beat both neighbours on two of three columns — a structural fact, not a ranking — and
+  hiding it would also lie to the watcher, which diffs that set to spot a strike newly
+  earning one.
+
+**Fixed alongside: the strike cap now scales with how many columns are on.** The indicator
+declares `max_labels_count = 300` and draws one label per column per strike. A fixed cap of
+60 was fine at three columns (180 labels) and blew the budget at seven (420) — where Pine
+drops the oldest labels and the top of the board just stops rendering. The cap is now
+computed from the column count (60 at three columns, 40 at seven), keeping the strikes
+nearest price.
+
+Upgrading changes nothing on sight: an install with no per-column rules seeds all seven
+from whatever the old global dropdown was set to.
+
+### Recent
+
+**v6.1.1.4** — Gravity actually reads now. The parser was never the problem — the navigation was
+
+**v6.1.0.4** — Flow and momentum are on the panel — and they were on the Overview page the whole time
+
+**v6.0.1.4** — Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry
+
+**v6.0.0.4** — Gravity is on the chart
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.1.1.4 — 2026-09-23
 
 **Gravity actually reads now. The parser was never the problem — the navigation was.**
