@@ -6,6 +6,67 @@ Newest first.
 
 ---
 
+## v6.3.0.4 — 2026-09-24
+
+**The extension reloads itself when a new build lands. No more "now go reload it".**
+
+Chrome loads this unpacked, straight out of the project folder, and it does not watch
+those files — so every release ended with a manual step at the end of a pipeline whose
+entire point is that there are none. Nothing outside Chrome can fix that either: the only
+reload control lives on `chrome://extensions`, which extensions are barred from scripting.
+
+But the extension can reload *itself*. `chrome.runtime.getManifest()` returns the version
+Chrome **loaded**; fetching a packaged file reads what is **on disk right now**. When those
+disagree, a new build has landed and this copy is stale, so it calls
+`chrome.runtime.reload()`.
+
+The version is read from the Pine script's header, not from `manifest.json` — Chrome
+serves the manifest from its own in-memory copy of the loaded extension, so it would
+always agree with itself and never trigger. `package.sh` stamps the full version into that
+header on every build, which makes it the honest on-disk witness.
+
+Two guards, both learned the hard way elsewhere in this project:
+
+- **Confirmed across two checks.** A release rewrites files one at a time, so a single
+  check can catch a build mid-stamp; reloading then would load a half-written extension.
+- **Never mid-sync.** Reloading tears down the service worker, which would abandon a run
+  half-done — levels pasted, columns not, and no error anywhere to say why.
+
+It checks once a minute, which costs one read of a local file, so a release is live in the
+browser about a minute after it is published.
+
+### Recent
+
+**v6.2.0.4** — Every column now decides for itself which strikes are worth showing
+
+**v6.1.1.4** — Gravity actually reads now. The parser was never the problem — the navigation was
+
+**v6.1.0.4** — Flow and momentum are on the panel — and they were on the Overview page the whole time
+
+**v6.0.1.4** — Fixes the tab-every-sync and the 23-second runs that 6.0.0.4 introduced. Sorry
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.2.0.4 — 2026-09-24
 
 **Every column now decides for itself which strikes are worth showing.**
