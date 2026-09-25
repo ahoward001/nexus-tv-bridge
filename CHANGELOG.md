@@ -6,6 +6,67 @@ Newest first.
 
 ---
 
+## v6.4.0.6 — 2026-09-25
+
+**NET 3M replaces Nexus's 1-minute momentum, and gravity gets out of the legend entirely.**
+
+**NET 3M.** Nexus publishes only a one-minute momentum figure — its flow panel has no
+window control at all (`1H/4H/1D/All` are chart ranges, and `Momentum` is a series
+toggle), so there is nothing to read for a longer horizon. A 3-minute number has to be
+derived, and the honest derivation is the change in **cumulative net delta flow**: that
+series is a running total for the day, so the difference between two readings *is* the net
+flow between them.
+
+It is reported only when a real sample exists near the target age — 30 seconds to 5.5
+minutes old. Interpolating, or quietly widening to "whatever we happen to have", would put
+a number on the panel that doesn't mean what its label says. **The label carries the real
+span** (`NET 3.4m`) rather than always printing "3m", because the samples land where the
+syncs land and rounding that away is a small lie told every minute.
+
+**Gravity label drops "held"** — now `▼ GRAVITY 736 · 60% · 22m`.
+
+**Gravity is fully out of the legend.** Hiding `Gravity data` last time stopped the raw
+string appearing, but TradingView prints *every* numeric input there, so the line width
+and label offset were still showing as a bare `3 3` beside the indicator name with nothing
+to say what they were. Both now carry `display = display.none`.
+
+**Kept: the reach target.** Checked against the recorded bounce study, the reach candidate
+was never beyond the level being touched — it was the level itself (52 touches) or sitting
+where price would travel if the level held (84). It is not a break forecast; it is the
+model's answer to *where does price go next*, which makes it a target, not a direction.
+
+### Recent
+
+**v6.3.5.5** — Gravity: bright blue, one line, and out of the legend
+
+**v6.3.4.4** — structurally
+
+**v6.3.3.4** — Rolls the strike selection back to v6.1.1.4, verbatim. Levels should draw again
+
+**v6.3.2.4** — The panel numbers were wrong by a factor of a thousand, and said so with a decimal point
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.3.5.5 — 2026-09-25
 
 **Gravity: bright blue, one line, and out of the legend.**
