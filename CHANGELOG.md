@@ -6,6 +6,56 @@ Newest first.
 
 ---
 
+## v6.4.1.7 — 2026-09-25
+
+**Gravity draws on top.**
+
+Two different layers were burying it, and only one of them is a Pine problem.
+
+**Inside the script**, TradingView paints in creation order — whatever is made last sits on
+top. The reach marker was being drawn *after* gravity, so the thin dashed line and its
+label were laid over the level that matters most. The order is now deliberately reversed:
+reach first, gravity last, which is the opposite of the obvious reading order and needs to
+stay that way.
+
+**Across indicators, Pine cannot fix it at all.** Nexus Futures draws thick wall bands that
+will cover a line from another study no matter what either script does — z-order between
+studies is a chart property. The fix is on the indicator's legend row:
+**More (…) → Visual order → Bring to front.** I've set that on the chart and noted it in
+the script so the next person doesn't go looking for a Pine answer that doesn't exist.
+
+### Recent
+
+**v6.4.0.6** — NET 3M replaces Nexus's 1-minute momentum, and gravity gets out of the legend entirely
+
+**v6.3.5.5** — Gravity: bright blue, one line, and out of the legend
+
+**v6.3.4.4** — structurally
+
+**v6.3.3.4** — Rolls the strike selection back to v6.1.1.4, verbatim. Levels should draw again
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.0.6 — 2026-09-25
 
 **NET 3M replaces Nexus's 1-minute momentum, and gravity gets out of the legend entirely.**
