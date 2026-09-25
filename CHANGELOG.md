@@ -6,6 +6,59 @@ Newest first.
 
 ---
 
+## v6.3.2.4 — 2026-09-25
+
+**The panel numbers were wrong by a factor of a thousand, and said so with a decimal point.**
+
+FLOW read "+1400.0" and MOM read "+1200.0". Both were the raw figure pre-divided by a
+thousand and printed to one decimal — and both halves of that were wrong. The decimal
+carried no information at that size (it was always `.0`), and dropping the unit turned
+**+1.4 million** into something that looks like fourteen hundred of whatever. They now
+print the real magnitude with its own suffix: **+1.4M**, **+1.2M**, **-482.9K**.
+
+GRAD loses its trailing zero too — "+20.0" becomes "+20", and a real fraction still shows
+one place ("+3.1").
+
+**Also added: a black-box recorder for the strike selection.** Everything that decides
+which strikes get drawn is logged to the service-worker console, which is unreachable
+unless DevTools happens to be open on the extension at that moment — so "none of my strikes
+are showing up" arrives with no evidence attached and gets diagnosed by guesswork. That is
+how the last hour went. The decision is now persisted to `chrome.storage.local.lastExtra`:
+how many strikes came in, how many survived, the cap, which columns were enabled, which
+rule each one applied, the line-keepers, and the head of the string actually written.
+
+### Recent
+
+**v6.3.1.4** — `build.json` carries the SHA-256 of every file
+
+**v6.3.0.4** — The extension reloads itself when a new build lands. No more "now go reload it"
+
+**v6.2.0.4** — Every column now decides for itself which strikes are worth showing
+
+**v6.1.1.4** — Gravity actually reads now. The parser was never the problem — the navigation was
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.3.1.4 — 2026-09-24
 
 **Replaces yesterday's self-reload with the recorder's, which has been doing this properly
