@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.4.0.6
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.4.2.7
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -521,6 +521,26 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
         gTgt   = array.size(gf) > 3 and str.length(array.get(gf, 3)) > 0 ? str.tonumber(array.get(gf, 3)) : na
         gHeld  = array.size(gf) > 4 and str.length(array.get(gf, 4)) > 0 ? str.tonumber(array.get(gf, 4)) : na
         if not na(gPrice)
+            // DRAWN LAST, ON PURPOSE. Within one indicator TradingView paints in creation
+            // order, so whatever is made last sits on top. Gravity is the one level here
+            // that must never be buried, so the REACH marker is drawn first and gravity
+            // goes over it — the reverse of the obvious reading order.
+            //
+            // Across indicators this is not enough: Nexus Futures draws thick wall bands
+            // that will cover a line from another study regardless of what either script
+            // does. That is a chart property, not a Pine one — fix it on the indicator's
+            // legend row: More (...) > Visual order > Bring to front.
+            if showReach and not na(gTgt) and gTgt != gPrice
+                rLine = line.new(bar_index - 1, gTgt, bar_index, gTgt,
+                     extend = extend.both, color = color.new(gravCol, 45), width = 1, style = line.style_dashed)
+                array.push(lns, rLine)
+                rLab = label.new(bar_index + gravLabOff, gTgt, "→ reach " + str.tostring(gTgt, format.mintick),
+                     style     = label.style_label_left,
+                     color     = color.new(gravCol, 45),
+                     textcolor = color.white,
+                     size      = sizeOf("Tiny"),
+                     text_font_family = heavyFont ? font.family_monospace : font.family_default)
+                array.push(lbs, rLab)
             gLine = line.new(bar_index - 1, gPrice, bar_index, gPrice,
                  extend = extend.both, color = gravCol, width = gravWidth, style = line.style_solid)
             array.push(lns, gLine)
@@ -542,16 +562,3 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                  size      = sizeOf(effSz),
                  text_font_family = heavyFont ? font.family_monospace : font.family_default)
             array.push(lbs, gLab)
-            // The reach target, thin and dashed so it can never be mistaken for the level
-            // itself, with an arrow back toward where the pull is coming from.
-            if showReach and not na(gTgt) and gTgt != gPrice
-                rLine = line.new(bar_index - 1, gTgt, bar_index, gTgt,
-                     extend = extend.both, color = color.new(gravCol, 45), width = 1, style = line.style_dashed)
-                array.push(lns, rLine)
-                rLab = label.new(bar_index + gravLabOff, gTgt, "→ reach " + str.tostring(gTgt, format.mintick),
-                     style     = label.style_label_left,
-                     color     = color.new(gravCol, 45),
-                     textcolor = color.white,
-                     size      = sizeOf("Tiny"),
-                     text_font_family = heavyFont ? font.family_monospace : font.family_default)
-                array.push(lbs, rLab)
