@@ -6,6 +6,66 @@ Newest first.
 
 ---
 
+## v6.3.3.4 — 2026-09-25
+
+**Rolls the strike selection back to v6.1.1.4, verbatim. Levels should draw again.**
+
+The per-column sensitivity rewrite in v6.2.0.4 replaced the entire block that decides which
+strikes get drawn, and strikes stopped appearing. I have not established why — on the
+migration path it takes (no saved rules, `metricDensity` still "every") every column should
+vote for every strike, so the selection itself looks innocent. That is precisely why it
+should not stay in while unexplained. A chart with no levels on it is worse than a chart
+without a settings feature.
+
+So the selection is the old code, character for character, pulled from the shipped v6.1.1.4
+build rather than retyped. The Options page goes back with it, including the global
+"How many levels to show" dropdown — leaving seven per-column selectors on screen that no
+longer control anything would be its own kind of broken.
+
+**Kept from today**, because none of it touches selection:
+
+- Panel numbers read as real magnitudes — `+1.4M`, not `+1400.0`
+- Flow and momentum off the Overview panel
+- Gravity's reader and the `<select>` view navigation
+- Self-reload on a new build
+- The strike-selection recorder in `chrome.storage.local.lastExtra`
+
+The recorder is the point now: the next sync writes down what came in, what survived, and
+the head of the string it wrote, so the next attempt at this starts from evidence instead
+of from a guess. Which is how it should have started.
+
+### Recent
+
+**v6.3.2.4** — The panel numbers were wrong by a factor of a thousand, and said so with a decimal point
+
+**v6.3.1.4** — `build.json` carries the SHA-256 of every file
+
+**v6.3.0.4** — The extension reloads itself when a new build lands. No more "now go reload it"
+
+**v6.2.0.4** — Every column now decides for itself which strikes are worth showing
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.3.2.4 — 2026-09-25
 
 **The panel numbers were wrong by a factor of a thousand, and said so with a decimal point.**
