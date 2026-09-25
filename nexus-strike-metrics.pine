@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.3.5.5
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.4.0.6
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -66,9 +66,12 @@ showGrav   = input.bool(true, "Show gravity level", group = "Gravity",
      tooltip = "A bold line at Nexus's ACTIVE gravity level, with an arrow showing which way it " +
      "is pulling from here and how long it has held.")
 gravCol    = input.color(#00A3FF, "Gravity color", group = "Gravity")
-gravWidth  = input.int(3, "Gravity line width", minval = 1, maxval = 8, group = "Gravity",
+// display.none on the two numeric gravity inputs as well: TradingView prints every
+// numeric input into the legend, so these were showing up as a bare "3 3" beside the
+// indicator name with nothing to say what they were.
+gravWidth  = input.int(3, "Gravity line width", minval = 1, maxval = 8, group = "Gravity", display = display.none,
      tooltip = "Deliberately heavier than the strike lines — it is one level, not one of twenty.")
-gravLabOff = input.int(3, "Gravity label offset (bars right)", minval = 0, maxval = 80, group = "Gravity")
+gravLabOff = input.int(3, "Gravity label offset (bars right)", minval = 0, maxval = 80, group = "Gravity", display = display.none)
 showReach  = input.bool(true, "Mark the reach target", group = "Gravity",
      tooltip = "Nexus's highest-touch-probability level, drawn thin and dashed. This is what the " +
      "gravity arrow points AT: gravity says where the pull is, reach says where it most likely goes.")
@@ -531,7 +534,7 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
             // extension still reads it; it just is not worth two lines of chart.
             gTxt   = (gUp ? "▲" : "▼") + " GRAVITY " + str.tostring(gPrice, format.mintick) +
                  (na(gProb) ? "" : " · " + str.tostring(math.round(gProb)) + "%") +
-                 (str.length(gAge) > 0 ? " · held " + gAge : "")
+                 (str.length(gAge) > 0 ? " · " + gAge : "")
             gLab = label.new(bar_index + gravLabOff, gPrice, gTxt,
                  style     = label.style_label_left,
                  color     = gravCol,
