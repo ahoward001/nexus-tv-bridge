@@ -6,6 +6,53 @@ Newest first.
 
 ---
 
+## v6.3.5.5 — 2026-09-25
+
+**Gravity: bright blue, one line, and out of the legend.**
+
+- **Colour** is now bright blue (`#00A3FF`) instead of violet.
+- **One line.** The classification — DOMINANT STRUCTURE / REACH CANDIDATE / CONFLUENCE —
+  was a second line under the price, doubling the label's height for a phrase that doesn't
+  change what you do about the level. It now reads `▼ GRAVITY 736 · 60% · held 10m` and
+  stops there. The extension still reads the classification; it just isn't worth two lines
+  of chart.
+- **Off the legend.** The `Gravity data` input had no `display` setting, so TradingView
+  printed its whole raw value — `736:DOMINANT STRUCTURE:60:742:10` — into the chart legend
+  next to the indicator name. It now carries `display = display.none`, the same thing that
+  already keeps the (much longer) strike-metrics string out of there.
+
+### Recent
+
+**v6.3.4.4** — structurally
+
+**v6.3.3.4** — Rolls the strike selection back to v6.1.1.4, verbatim. Levels should draw again
+
+**v6.3.2.4** — The panel numbers were wrong by a factor of a thousand, and said so with a decimal point
+
+**v6.3.1.4** — `build.json` carries the SHA-256 of every file
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.3.4.4 — 2026-09-25
 
 **Found it. The column writer was ticking the wrong checkbox, and it turned off
