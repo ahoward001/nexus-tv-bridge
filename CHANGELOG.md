@@ -6,6 +6,58 @@ Newest first.
 
 ---
 
+## v6.4.8.8 — 2026-09-28
+
+**Gravity no longer depends on the strike read succeeding.**
+
+Gravity was written as one of the pairs in the strike-metrics write. So every early return
+in that function — a strike table that wouldn't render, a read centred on the wrong ticker
+— skipped gravity as well. The reading was correct and sitting in the cache the whole
+time; it simply never reached the chart, and the previous value stayed put.
+
+That is how the chart sat on `GRAVITY 727 · 56% · 17m` for 79 minutes while the cache held
+**738 · DOMINANT STRUCTURE · 100% · reach 737**, matching the board exactly.
+
+The two have nothing to do with each other: gravity comes off its own view, on its own
+cadence, and has no dependency on the strike table. It is now written **first**, before
+anything that can bail, and written **even when empty** so a level we can no longer vouch
+for is cleared rather than left behind.
+
+The "Strike metrics didn't update" warning is unchanged and still means what it says — the
+columns are stale. It just no longer takes gravity down with it.
+
+### Recent
+
+**v6.4.7.8** — A stale gravity line could never be cleared. Now it is
+
+**v6.4.6.8** — The bridge was reading the recorder's tab. That's the "7000s" error
+
+**v6.4.5.8** — The gravity arrow points at the reach target now, not at gravity
+
+**v6.4.4.7** — Gravity is read on every sync now, and MOM stops reading zero
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.7.8 — 2026-09-28
 
 **A stale gravity line could never be cleared. Now it is.**
