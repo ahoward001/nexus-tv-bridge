@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.4.4.7
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.4.5.8
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -544,15 +544,27 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
             gLine = line.new(bar_index - 1, gPrice, bar_index, gPrice,
                  extend = extend.both, color = gravCol, width = gravWidth, style = line.style_solid)
             array.push(lns, gLine)
-            // The arrow points the way the level sits FROM HERE — up if price has to rise to
-            // reach it, down if it has to fall. Same duration format as the AGE column.
-            gUp    = gPrice > close
+            // THE ARROW POINTS AT THE REACH, NOT AT GRAVITY.
+            //
+            // It used to mean "which way price must move to get to the gravity level",
+            // which is backwards for reading: gravity is where you already are looking,
+            // and the reach candidate is where the model expects price to GO. With price
+            // at 732.5, gravity 727 and reach 733, the old rule drew a down arrow on a
+            // level whose target was above.
+            //
+            // So: up when the reach sits above the gravity level, down when below. With no
+            // reach to point at, fall back to the old price-relative meaning rather than
+            // guessing, and when the reach IS this level there is no direction to give —
+            // the report's "treat it as a magnet rather than a wall" case — so no arrow.
+            gHasTgt = not na(gTgt) and gTgt != gPrice
+            gUp    = gHasTgt ? gTgt > gPrice : gPrice > close
+            gArrow = gHasTgt ? (gUp ? "▲" : "▼") : (na(gTgt) ? (gPrice > close ? "▲" : "▼") : "")
             gAge   = na(gHeld) ? "" : gHeld < 60 ? str.tostring(math.round(gHeld)) + "m" : str.tostring(math.round(gHeld / 6.0) / 10, "#.#") + "h"
             // ONE LINE. The classification (DOMINANT STRUCTURE / REACH CANDIDATE /
             // CONFLUENCE) was a second line under the price, which doubled the label's
             // height for a phrase that does not change what you do about the level. The
             // extension still reads it; it just is not worth two lines of chart.
-            gTxt   = (gUp ? "▲" : "▼") + " GRAVITY " + str.tostring(gPrice, format.mintick) +
+            gTxt   = (str.length(gArrow) > 0 ? gArrow + " " : "") + "GRAVITY " + str.tostring(gPrice, format.mintick) +
                  (na(gProb) ? "" : " · " + str.tostring(math.round(gProb)) + "%") +
                  (str.length(gAge) > 0 ? " · " + gAge : "")
             gLab = label.new(bar_index + gravLabOff, gPrice, gTxt,
