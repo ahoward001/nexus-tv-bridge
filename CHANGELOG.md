@@ -6,6 +6,79 @@ Newest first.
 
 ---
 
+## v6.7.0.8 — 2026-09-28
+
+**Per-column sensitivity. Every column decides for itself which strikes it wants to see.**
+
+To the right of each column's checkbox in Options there is now a selector:
+
+- **all levels** — every strike in the table
+- **top half** — the bigger half, ranked on that column's own metric
+- **significant only** — the strikes our line rules pick out, **plus the export levels
+  themselves** (Call Wall, Put Wall, Gamma Flip…). Leaving those out was the flaw in the
+  old single "significant" setting: it hid the very levels the chart is drawn from.
+- **custom** — two blanks. A percentage above the board's average for that column, or a
+  flat number. Fill in either; filling both is fine and passing *either* is enough.
+
+**The chart shows the union.** If a strike passes any switched-on column's test, the whole
+row comes along — you never get a level with holes punched in it by whichever rule
+happened to be strictest. A column ranks on its own metric, by SIZE: a −46M put wall and a
++46M call wall are equally worth seeing.
+
+**A setting may thin the board. It may never blank it.** This feature shipped once before,
+in v6.2.0.4, and strikes stopped appearing on the chart; it was rolled back with the cause
+never established. Whatever that specific defect was, the class of it is a settings
+combination silently resolving to "draw nothing" — and a chart with no levels is worse
+than a chart with no feature. So if no column expresses an opinion, or nothing passes,
+every strike is drawn and the log says which of those happened. Strikes that earn a dotted
+line survive any thinning, as they always have. Twenty-two checks in
+`.tooling/test-column-rules.mjs` hold that line, including a threshold nothing can pass.
+
+**Nothing changes for an install that never opens Options.** The old single
+`metricDensity` seeds every column's starting mode, so today's behaviour is exactly
+yesterday's until you touch a selector.
+
+**Also fixed:** the master "Strike metrics" switch never listed **DEX**, so turning the
+feature off left the DEX checkbox ticked and ungreyed while nothing filled it — the exact
+"the checkbox is lying" case that cascade exists to prevent.
+
+**And the strike cap now follows the column count.** Pine allows 300 labels and draws one
+per column per strike. A flat cap of 60 was fine at three columns (180 labels) and blew
+the budget at seven (420), where Pine drops the oldest labels and the top of the board
+simply stops rendering. Seven columns now keep 40 strikes; three still keep 60.
+
+### Recent
+
+**v6.6.0.8** — The bridge and the NEXUS recorder now tell each other which Nexus tab is whose
+
+**v6.5.3.8** — 0
+
+**v6.5.2.8** — "The strike table wouldn't render" was wrong. One sort arrow was dropping the whole table
+
+**v6.5.1.8** — The columns were being read off the wrong Nexus view
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.6.0.8 — 2026-09-28
 
 **The bridge and the NEXUS recorder now tell each other which Nexus tab is whose.**
