@@ -6,6 +6,78 @@ Newest first.
 
 ---
 
+## v6.5.0.8 — 2026-09-28
+
+**Gravity is its own upload now — the third one, beside the levels and the columns.**
+
+v6.4.8.8 stopped gravity from dying when the strike read failed, but it was still a
+passenger: one pair inside the strike-metrics write, inheriting that feature's master
+switch and living inside its function. Turning **Strike metrics** off silently killed
+gravity too, and nothing about the blue line was ever reported on its own.
+
+Gravity comes off a different Nexus view, on a different cadence, from a different cache.
+It is now a separate step with its own switch, its own change tracking and its own
+notifications, and it runs whatever the other two did.
+
+**Its own switch.** Options → **Gravity**, independent of Strike metrics. Turning it off
+*clears* the line rather than freezing the last level on the chart — off means gone, not
+stuck, which is the same mistake that kept `GRAVITY 727` up for 79 minutes.
+
+**Its own notifications**, on the same policy as everything else here — a popup only when
+something needs you:
+
+- **⚓ Gravity moved up → 745** — the anchor the day is trading around has migrated. Names
+  the old level, the new reach and the touch probability. Fires once per move, never on a
+  level that simply sat still.
+- **⚠ Gravity didn't reach the chart** — we *had* a reading and could not draw it, so the
+  blue line is either absent or showing something older. That needs you.
+- A reading we can't vouch for still clears the line, and says nothing. Staleness is never
+  a popup here; the missing line and the hover carry it.
+- A clear followed by the same level returning is **not** reported as a move.
+
+**Its own row in the hover**, beside "Levels updated" and "Strikes updated":
+`Gravity 738 → 737 · moved 2:41 PM (18 min ago)`. It appears only when there is something
+true to say — no blank gravity line, ever.
+
+**When the export code can't be read**, the run now tries all three jobs and says which
+ones worked, instead of reporting two. Gravity is cached and comes off another view, so a
+missing export code says nothing about whether the line can be drawn.
+
+Sixteen checks in `.tooling/test-gravity.mjs` pin the notification decisions, including
+the phantom-move case.
+
+### Recent
+
+**v6.4.9.8** — "The strike table wouldn't render" — the recorder's tab comes back as a read-only fallback
+
+**v6.4.8.8** — Gravity no longer depends on the strike read succeeding
+
+**v6.4.7.8** — A stale gravity line could never be cleared. Now it is
+
+**v6.4.6.8** — The bridge was reading the recorder's tab. That's the "7000s" error
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.9.8 — 2026-09-28
 
 **"The strike table wouldn't render" — the recorder's tab comes back as a read-only fallback.**
