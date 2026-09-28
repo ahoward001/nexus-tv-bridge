@@ -6,6 +6,61 @@ Newest first.
 
 ---
 
+## v6.4.4.7 — 2026-09-28
+
+**Gravity is read on every sync now, and MOM stops reading zero.**
+
+**Gravity rides along with the sync.** The sync already walks the Nexus tab to the Export
+view; walking it to Gravity and back costs one more navigation and gets a LIVE reading.
+That is the only way to get one — the view renders lazily so a background tab never mounts
+it, and the server returns `gravityModel: null`. The tab is always put back on the view it
+came from; leaving someone's dashboard somewhere they didn't choose is its own bug. The
+"keep a Nexus tab on Gravity" workaround is gone; it shouldn't have been the answer.
+
+**MOM read 0 because the number it was derived from is rounded.** The flow panel prints
+cumulative net delta flow as `-6.6M` — one decimal at the millions scale, so ±100,000 of
+granularity. Three consecutive reads returned `-6.6M`, `-6.6M`, `-6.6M` while flow was
+plainly moving. A real 3-minute net is *smaller than the rounding step*, so subtracting two
+rounded readings gives zero almost every time. The derivation was fine; the input never
+carried the precision it needed, and no amount of sampling fixes an already-rounded number.
+
+MOM now shows **Nexus's own Momentum figure**, which prints in K (`-482.9K`, `+408K`) and
+is therefore precise. It's a 1-minute window because that is Nexus's choice — its flow
+panel has no window control (`1H/4H/1D/All` are chart ranges; `Momentum` is a series
+toggle). A genuine 3-minute net needs a precision the dashboard doesn't expose.
+
+### Recent
+
+**v6.4.3.7** — 738 at 97.6%
+
+**v6.4.2.7** — The panel says MOM and FLOW again, and the empty gravity row is gone
+
+**v6.4.1.7** — Gravity draws on top
+
+**v6.4.0.6** — NET 3M replaces Nexus's 1-minute momentum, and gravity gets out of the legend entirely
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.3.7 — 2026-09-28
 
 **A three-day-old gravity level was being drawn as if it were live. Nothing now survives
