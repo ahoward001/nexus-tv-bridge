@@ -6,6 +6,80 @@ Newest first.
 
 ---
 
+## v6.8.0.9 — 2026-09-28
+
+**The Pine script is rebuilt around a column table, and the columns can be reordered.**
+
+These are one job, not two. A column used to be defined in FIVE places that had to be kept
+in step by hand — its input, its field index, its colour, its block in the data loop, and
+its block in the header loop — and the spacing constants appeared independently in both
+loops, so the data and its headers could silently drift apart. That is the "change one
+thing, miss a reference, something breaks" machine. Adding reordering on top of that shape
+would have meant seven *more* hand-maintained blocks.
+
+So a column is now six small functions — `colKey` / `colTitle` / `colShow` / `colNudge` /
+`colBump` / `colAdv` — and both loops walk the same table. **One place to change, and the
+headers cannot disagree with the data**, because both are computed from the same numbers.
+The seventeen wire fields get named constants (`F_DEXHEAT`, not `array.size(f) > 15`).
+
+It is not less code — 374 code lines against 322. That was never the goal:
+
+```
+per-column if-blocks   14 -> 0
+magic field indices    15 -> 1
+```
+
+**Reordering** is then almost free. A `Column order` input takes a key list
+(`score,oi,gex,dex,share,vol,age`); Options grows ▲ ▼ buttons per row and writes it on the
+next sync. The Pine side is deliberately forgiving: a key it doesn't recognise is ignored
+and a missing key keeps its default position, so a typo — or an older extension that never
+writes the input — can only leave the order alone. It can never drop a column.
+
+**Found while rewriting:** the old code never advanced the slot after AGE. Harmless while
+AGE was pinned last, and it would have broken the moment anything moved past it.
+
+**Verified in TradingView, not asserted.** Pasted into a scratch script and saved:
+`Compiling... saved.` — no errors, no markers. The test script was deleted afterwards.
+
+**Two UI bugs the unit tests passed and a rendered page caught.** Reordering appended the
+rows to the end of their container, pushing all seven below the explanatory text — every
+check still passed, because they compared the rows to each other and never asked where the
+block had gone. And `.colcustom { display:flex }` outranks the browser's own
+`[hidden] { display:none }`, so after the blanks were made to collapse they rendered on
+every row regardless of mode. Both are now pinned by checks that would have caught them.
+
+### Recent
+
+**v6.7.2.8** — The custom blanks collapse again when they're not in use
+
+**v6.7.1.8** — The column rows now fit on one line each, in fixed columns
+
+**v6.7.0.8** — Per-column sensitivity. Every column decides for itself which strikes it wants to see
+
+**v6.6.0.8** — The bridge and the NEXUS recorder now tell each other which Nexus tab is whose
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.7.2.8 — 2026-09-28
 
 **The custom blanks collapse again when they're not in use.**
