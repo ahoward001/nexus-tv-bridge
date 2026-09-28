@@ -6,6 +6,63 @@ Newest first.
 
 ---
 
+## v6.6.0.8 — 2026-09-28
+
+**The bridge and the NEXUS recorder now tell each other which Nexus tab is whose.**
+
+Until now the bridge only knew the recorder's tab by spotting `nxr=1` in its URL, and the
+recorder knew nothing about the bridge at all. Both have closed or taken over the other's
+tab this month, and each time it cost real captures.
+
+Now, every few minutes and whenever a sync starts, each one sends the other a short
+message saying which tab it is working in. The rules that follow from it:
+
+- **A tab the other one has claimed is read-only.** The bridge never reloads, navigates,
+  switches the view of, or closes the recorder's tab. The recorder does the same for the
+  tabs the bridge works in. That includes the case that used to slip through: after a
+  Chrome restart, tab numbers get reused, so the recorder's saved tab number could end up
+  pointing at *your* Nexus tab.
+- **The bridge can still read strikes from the recorder's tab** as a last resort, only on
+  the matching ticker, exactly as before.
+- **A claim runs out after 10 minutes** if it isn't renewed, and is deleted after 12 hours,
+  so an old claim can never lock a tab out.
+- **If the recorder isn't installed or doesn't answer, nothing changes.** The `nxr=1`
+  check still works on its own.
+
+No change to the Pine script.
+
+### Recent
+
+**v6.5.3.8** — 0
+
+**v6.5.2.8** — "The strike table wouldn't render" was wrong. One sort arrow was dropping the whole table
+
+**v6.5.1.8** — The columns were being read off the wrong Nexus view
+
+**v6.5.0.8** — Gravity is its own upload now — the third one, beside the levels and the columns
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.5.3.8 — 2026-09-28
 
 **Nexus only mounts the strike table when you scroll to it. The sync reloads the tab, which
