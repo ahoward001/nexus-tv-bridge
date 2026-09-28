@@ -6,6 +6,80 @@ Newest first.
 
 ---
 
+## v6.5.2.8 — 2026-09-28
+
+**"The strike table wouldn't render" was wrong. One sort arrow was dropping the whole table.**
+
+Aidan was looking straight at a fully rendered strike table while the extension reported
+that it wouldn't render. It renders fine. The reader was throwing every row away.
+
+Column positions are read from the header, matching **exactly** on purpose — `DEX` must
+not match `DEX NORM` or `DEX SHARE`, and `GEX` must not match `VEX` or `CEX`. But every
+header cell carries a sort control, so its text arrives as `"DEX ⌄"`, `"STRIKE ⌄"`. Exact
+comparison against decorated text fails, and each lookup then fell back to a hard-coded
+index from an older layout — `GEX` at 11, `DEX` at 12.
+
+That fallback was load-bearing in the worst way. The row filter was
+`if (cells.length <= iGex) continue` — so on a layout with fewer columns than the stale
+guess, **every row was discarded** and the reader returned zero. Upstream that became
+`no-rows`, and `no-rows` was printed as "the strike table wouldn't render and the page's
+own copy was unusable."
+
+Three fixes:
+
+- **Header text is normalised before comparison** — the sort decoration is stripped, the
+  name is not. The exactness that keeps DEX off DEX NORM is untouched; a test pins both.
+- **A row is a data row because it has a strike in it**, not because it has enough cells.
+  A column we can't find now costs us *that column*, not the entire table.
+- **The header match tolerates a decorated `STRIKE`**, so the header is found at all.
+
+**And the log stops guessing.** `no-rows` was one word for a logged-out page, the wrong
+view, a grid that hasn't mounted, and a grid that's fully rendered with moved columns —
+four problems needing opposite fixes. It now reports which one fired, with the header it
+found, the cell counts and the view:
+
+```
+strikes: tab 1768770299 gave nothing —
+  grid-has-27-rows-but-none-parsed(hdr:MISSING,cells:9/9/9/9/9,strikeIdx:1)
+```
+
+Two wrong diagnoses came out of that missing detail today. It won't happen a third time.
+
+Also carried from v6.5.1.8: `readStrikesBestTab` puts the tab on Overview itself rather
+than assuming an earlier step left it there. The recorder's tab is still never navigated.
+
+### Recent
+
+**v6.5.1.8** — The columns were being read off the wrong Nexus view
+
+**v6.5.0.8** — Gravity is its own upload now — the third one, beside the levels and the columns
+
+**v6.4.9.8** — "The strike table wouldn't render" — the recorder's tab comes back as a read-only fallback
+
+**v6.4.8.8** — Gravity no longer depends on the strike read succeeding
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.5.1.8 — 2026-09-28
 
 **The columns were being read off the wrong Nexus view.**
