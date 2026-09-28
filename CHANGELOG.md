@@ -6,6 +6,81 @@ Newest first.
 
 ---
 
+## v6.5.3.8 — 2026-09-28
+
+**Nexus only mounts the strike table when you scroll to it. The sync reloads the tab, which
+scrolls it back to the top.**
+
+Measured directly on the live dashboard, mid-failure: page visible, logged in, no spinner,
+document 50 seconds old — and `[role="row"]` returned **0**. The strike grid was not in the
+DOM at all. Scrolled down, it is there with 27 rows. It lazy-mounts on scroll, and a reload
+puts the scroll back to the top, so the sync reads the tab in exactly the state where the
+table does not exist.
+
+The payload is unaffected by any of that: parsed live in the same moment, `detailedMetrics`
+held **26 strikes** with full values (`strike 749 · dex 2455540 · gex 1260070`). The data was
+sitting right there.
+
+**What stopped it being used: the staleness guard mistook the summary cards for the grid.**
+
+The payload is checked against the rendered grid — do its numbers still appear on screen? —
+and that check is supposed to be skipped when there is no grid to compare against, so an
+unreadable comparison can never invent staleness. The skip condition was "12 or more K/M/B
+tokens anywhere in the body". Measured on the top-scrolled page with no grid mounted: **15
+such tokens, every one from the KEY METRICS cards** — `-2,566.01M` net GEX, `-1.16B` net
+DEX, `204.4K` open interest. So it believed a grid was showing, hunted for the payload's
+numbers in a grid that did not exist, found none, and labelled a 50-second-old payload
+stale. The guard against inventing staleness was the thing inventing it.
+
+It now asks the actual question: **a grid is showing when grid rows exist.** A fresh payload
+on a top-scrolled page is now read as what it is — current — instead of demoted.
+
+**Also:** the wait loop gave up 4 seconds after a reload if the page showed no payload, no
+grid and no loading panel. For the first seconds of a fresh Next.js document all three are
+true while it is still perfectly alive, and the sync reloads this tab immediately before
+reading it. "Settled" now accounts for how old the document is.
+
+`.tooling/test-payload-freshness.mjs` rebuilds the measured page — no grid rows, 14 K/M/B
+tokens from the cards, a 50-second-old payload — and pins that all 26 strikes come back
+unflagged.
+
+**Correcting v6.5.2.8's notes:** they claimed the column layout was dropping the whole
+table. It was not — old and new logic both parse 26 rows from the rendered grid. What that
+release genuinely fixed is that `DEX` was resolving to the **VEX** column, so every DEX
+figure on the chart was the wrong column's number. That part stands.
+
+### Recent
+
+**v6.5.2.8** — "The strike table wouldn't render" was wrong. One sort arrow was dropping the whole table
+
+**v6.5.1.8** — The columns were being read off the wrong Nexus view
+
+**v6.5.0.8** — Gravity is its own upload now — the third one, beside the levels and the columns
+
+**v6.4.9.8** — "The strike table wouldn't render" — the recorder's tab comes back as a read-only fallback
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.5.2.8 — 2026-09-28
 
 **"The strike table wouldn't render" was wrong. One sort arrow was dropping the whole table.**
