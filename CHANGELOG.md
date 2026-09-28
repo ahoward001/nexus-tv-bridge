@@ -6,6 +6,58 @@ Newest first.
 
 ---
 
+## v6.4.5.8 — 2026-09-28
+
+**The gravity arrow points at the reach target now, not at gravity.**
+
+It used to mean "which way price must move to get to the gravity level" — which is
+backwards for reading. Gravity is where you are already looking; the **reach candidate is
+where the model expects price to go**. With price at 732.5, gravity at 727 and reach at
+733, the old rule drew a **down** arrow on a level whose target was **above**.
+
+So: **up when the reach sits above the gravity level, down when below.**
+
+Two edge cases handled rather than guessed:
+
+- **No reach to point at** → falls back to the old price-relative meaning, so the arrow
+  still says something true.
+- **The reach IS the gravity level** → no arrow at all. There is no direction to give, and
+  this is the report's "treat it as a magnet rather than a wall" case: those broke 46% of
+  the time against 17% for a dominant-structure level that isn't also the reach. An arrow
+  pointing at itself would hide exactly the distinction worth seeing.
+
+### Recent
+
+**v6.4.4.7** — Gravity is read on every sync now, and MOM stops reading zero
+
+**v6.4.3.7** — 738 at 97.6%
+
+**v6.4.2.7** — The panel says MOM and FLOW again, and the empty gravity row is gone
+
+**v6.4.1.7** — Gravity draws on top
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.4.7 — 2026-09-28
 
 **Gravity is read on every sync now, and MOM stops reading zero.**
