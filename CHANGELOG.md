@@ -6,6 +6,57 @@ Newest first.
 
 ---
 
+## v6.4.9.8 — 2026-09-28
+
+**"The strike table wouldn't render" — the recorder's tab comes back as a read-only fallback.**
+
+Excluding the recorder's tab in 6.4.6.8 fixed the wrong-ticker reads (SPX strikes near
+7,000 drawn on a QQQ chart) but gave up the one tab that always renders. The recorder keeps
+its tab painting and reloads it every cycle, so its grid is live and its payload fresh.
+
+A tab that has been sitting in the background has neither: **the inlined payload only
+refreshes on a full page load, and a tab that isn't painting has no grid to read.** That is
+exactly the failure in the warning — "the strike table wouldn't render and the page's own
+copy was unusable".
+
+So it returns as a fallback, with both conditions that made it unsafe removed:
+
+- **Only when its URL carries the ticker actually being read.** No more SPX on a QQQ chart.
+- **Read-only.** Never reloaded, never navigated — so a capture in flight is untouched.
+- **Ranked last**, after every tab of the user's own. It is a safety net, not a default.
+
+### Recent
+
+**v6.4.8.8** — Gravity no longer depends on the strike read succeeding
+
+**v6.4.7.8** — A stale gravity line could never be cleared. Now it is
+
+**v6.4.6.8** — The bridge was reading the recorder's tab. That's the "7000s" error
+
+**v6.4.5.8** — The gravity arrow points at the reach target now, not at gravity
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.4.8.8 — 2026-09-28
 
 **Gravity no longer depends on the strike read succeeding.**
