@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.7.2.8
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.8.0.9
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -102,6 +102,14 @@ bubbleGap  = input.int(15, "Bubble spacing (bars)", minval = 2, maxval = 40, gro
 labelPosI  = input.string("Above", "Label float", options = ["Above", "Below", "Up-right", "Down-right"], group = "Style",
      tooltip = "Where the bubble sits vs its level. 'Above' puts it over the level with the pointer pointing DOWN to it.")
 lineWidth  = input.int(2, "Line width", minval = 1, maxval = 4, group = "Style")
+
+// THE DRAW ORDER, as a comma-separated list of column keys. The extension writes this
+// from the Options page; you can also type it here. A key that is missing keeps its
+// default position, and an unknown key is ignored — so a typo can never make a column
+// disappear, it just leaves the order alone.
+colOrder   = input.string("score,oi,gex,dex,share,vol,age", "Column order", group = "Columns",
+     display = display.none,
+     tooltip = "Left to right. Keys: score, oi, gex, dex, share, vol, age.")
 
 // Overall brightness. Rides ON TOP of the individual transparency inputs below
 // rather than replacing them, so any tuning you have done there survives. 0 = as
@@ -227,13 +235,13 @@ labelStyleOf(s) =>
      s == "Up-right" ? label.style_label_lower_right :
      label.style_label_upper_left
 
-// Signed value + its 0-1 heat -> a continuous colour on that sign's ramp.
-// Sign picks the family (green vs red); heat drives pale -> saturated -> deep.
 // Once a box gets dark (deep green / maroon / burgundy), black text disappears — flip the
 // label to white past that point so the top levels stay readable.
 txtOn(isDark) =>
     isDark ? color.white : colScoreT
 
+// Signed value + its 0-1 heat -> a continuous colour on that sign's ramp.
+// Sign picks the family (green vs red); heat drives pale -> saturated -> deep.
 signGrad(v, h) =>
     pos = not str.startswith(v, "-")
     cLo = pos ? colPosLo : colNegLo
@@ -264,22 +272,130 @@ opacityOf(hRaw) =>
     // large-but-not-largest level still looks strong.
     h = math.pow(math.max(0.0, math.min(1.0, hRaw)), heatCurve)
     t = h < 0.5 ? insigFade - (h / 0.5) * (insigFade - midT) : midT - ((h - 0.5) / 0.5) * (midT - darkT)
-    // fadeAll rides on top: push whatever transparency this box earned the rest of
-    // the way toward invisible, proportionally. Every bubble goes through here, so
-    // one slider moves the whole overlay without disturbing the relative weighting
-    // that makes big levels read as heavier than small ones.
-    // Symmetric: positive pushes t toward 100 (invisible), negative pulls it toward
-    // 0 (solid), both by the same proportional rule — so brightening cannot invert
-    // the ordering any more than fading can. Clamped because -80 on an already-solid
-    // box would otherwise compute a negative transparency.
+    // fadeAll rides on top, symmetric and proportional, so brightening cannot invert the
+    // ordering any more than fading can. Clamped because -80 on an already-solid box
+    // would otherwise compute a negative transparency.
     math.max(0.0, math.min(100.0, t + (100.0 - t) * (fadeAll / 100.0)))
 
-// NOTE: Pine labels have NO font-weight — there is no bold. Unicode bold glyphs
-// render as TOFU/garbage in TradingView's label font (tried it). The heaviest look
-// available is monospace (heavyFont) + high-contrast BLACK text on a COLORED box —
-// that contrast is what reads as "bold". Every bubble follows a score gradient
-// (gray -> own color) that darkens across the FULL score range to near-solid, so the
-// highest-score levels stand out as the darkest instead of the gradient flattening.
+// NOTE: Pine labels have NO font-weight — there is no bold. Unicode bold glyphs render as
+// TOFU in TradingView's label font (tried it). The heaviest look available is monospace
+// (heavyFont) + high-contrast BLACK text on a COLORED box.
+
+// =============================================================================
+// THE COLUMN TABLE — the single source of truth for what a column IS.
+// -----------------------------------------------------------------------------
+// This is the whole point of the 6.8 rewrite. A column used to be defined in FIVE
+// places that had to be kept in step by hand: its input, its field index, its colour,
+// its block in the data loop, and its block in the header loop. Adding or changing one
+// meant five coordinated edits, and the spacing constants appeared independently in the
+// data loop AND the header loop — so the two could silently drift and the headers would
+// stop sitting over their columns.
+//
+// Now a column is these six little functions, and BOTH loops read them. There is exactly
+// one place to change, and the headers cannot disagree with the data because they are
+// computed from the same numbers.
+// =============================================================================
+C_SCORE = 0
+C_OI    = 1
+C_GEX   = 2
+C_DEX   = 3
+C_SHARE = 4
+C_VOL   = 5
+C_AGE   = 6
+NCOL    = 7
+
+colKey(i) =>
+    i == C_SCORE ? "score" : i == C_OI ? "oi" : i == C_GEX ? "gex" : i == C_DEX ? "dex" :
+     i == C_SHARE ? "share" : i == C_VOL ? "vol" : "age"
+
+colTitle(i) =>
+    i == C_SCORE ? "SCORE" : i == C_OI ? "OI" : i == C_GEX ? "GEX" : i == C_DEX ? "DEX" :
+     i == C_SHARE ? "%BD" : i == C_VOL ? "VOL" : "AGE"
+
+colShow(i) =>
+    i == C_SCORE ? showScore : i == C_OI ? showOi : i == C_GEX ? showGex : i == C_DEX ? showDex :
+     i == C_SHARE ? showShare : i == C_VOL ? showVol : showAge
+
+// Sideways correction as a FRACTION of bubbleGap, so it scales with the spacing slider.
+// See SCORE_NUDGE / GEX_NUDGE above for why these two exist.
+colNudge(i) =>
+    i == C_SCORE ? SCORE_NUDGE : i == C_GEX ? GEX_NUDGE : 0.0
+
+// Whole-bar correction — a fixed label-width effect, so it does NOT scale with spacing.
+// Data bubbles only: the header chip is centred on its anchor, so it needs no bump.
+colBump(i) =>
+    i == C_SCORE ? SCORE_BUMP : 0
+
+// How far the slot advances AFTER this column. %BD holds "16%" against OI/GEX's "-29.4M",
+// so it gets a narrower lane rather than a nudge — see SHARE_SLOT.
+colAdv(i) =>
+    i == C_SHARE ? SHARE_SLOT : 1.0
+
+// The draw order, resolved from the `colOrder` string into column ids.
+//
+// Deliberately forgiving: a key that is missing from the string keeps its default
+// position at the end, and an unknown key is ignored. So a typo — or an older extension
+// that writes nothing here at all — can never make a column vanish. The worst a bad
+// string can do is leave the order alone.
+drawOrder(spec) =>
+    out  = array.new_int()
+    seen = array.new_bool(NCOL, false)
+    s    = str.lower(str.replace_all(spec, " ", ""))
+    if str.length(s) > 0
+        parts = str.split(s, ",")
+        if array.size(parts) > 0
+            for pi = 0 to array.size(parts) - 1
+                k = array.get(parts, pi)
+                idx = -1
+                for cj = 0 to NCOL - 1
+                    if colKey(cj) == k
+                        idx := cj
+                if idx >= 0 and not array.get(seen, idx)
+                    array.set(seen, idx, true)
+                    array.push(out, idx)
+    for cz = 0 to NCOL - 1
+        if not array.get(seen, cz)
+            array.push(out, cz)
+    out
+
+// =============================================================================
+// THE WIRE FORMAT — the single source of truth for which field is which.
+// -----------------------------------------------------------------------------
+// Seventeen positional fields used to be addressed by bare numbers scattered across a
+// hundred lines (`array.size(f) > 12 ? ... : na`). Adding a field meant auditing every
+// one of them. Now the numbers live here and nowhere else.
+// =============================================================================
+F_PRICE   = 0
+F_TYPE    = 1
+F_SCORE   = 2
+F_OI      = 3
+F_GEX     = 4
+F_LINE    = 5
+F_COLOR   = 6
+F_OIHEAT  = 7
+F_GEXHEAT = 8
+F_AGECD   = 9
+F_SHARE   = 10
+F_VOL     = 11
+F_SHHEAT  = 12
+F_VOLHEAT = 13
+F_DEX     = 14
+F_DEXHEAT = 15
+F_AGEMIN  = 16
+
+// A field as text — "" when the feed is older than the field.
+fTxt(f, i) =>
+    array.size(f) > i ? array.get(f, i) : ""
+
+// A field as a number — na when absent or empty, which every caller treats as
+// "this feed predates the field" rather than as a zero.
+fNum(f, i) =>
+    array.size(f) > i and str.length(array.get(f, i)) > 0 ? str.tonumber(array.get(f, i)) : na
+
+// A 0-100 heat field as a clamped 0-1 fraction, or na when absent.
+fHeat(f, i) =>
+    v = fNum(f, i)
+    na(v) ? na : math.max(0.0, math.min(1.0, v / 100.0))
 
 // Drawings persist across bars, so keep handles and clear them before redrawing —
 // otherwise every new bar stacks another copy until the object cap is hit.
@@ -288,14 +404,10 @@ var label[] lbs = array.new_label()
 
 // Draw one bubble (own text + background color) and remember it for cleanup.
 // Empty text draws nothing, so a missing column just leaves a gap.
-// `ctr` centres THIS bubble on its anchor instead of hanging it off the corner. Only the
-// SCORE column uses it: its text is one or two characters, so corner-anchoring leaves it
-// visibly left of its header while the wide OI/GEX boxes look fine. Centring everything
-// (tried in 4.6.2) moved the columns off where they were wanted — this is the narrow fix.
-drawBubble(int off, float price, string txt, color txtCol, color bgCol, string szName, bool ctr) =>
+drawBubble(int off, float price, string txt, color txtCol, color bgCol, string szName) =>
     if str.length(txt) > 0
         lb = label.new(bar_index + off, price, txt,
-             style     = ctr ? label.style_label_down : labelStyleOf(labelPosI),
+             style     = labelStyleOf(labelPosI),
              color     = bgCol,
              textcolor = txtCol,
              size      = sizeOf(szName),
@@ -317,19 +429,23 @@ drawHeader(float off, float price, string txt) =>
 
 // PERF: the body used to re-run on EVERY realtime tick, deleting and recreating ~70
 // labels each time — that is what triggered TradingView's "Heavy script / close to the
-// 20s runtime limit" warning. Nothing here depends on price, only on the Levels string
-// and the bar we anchor to, so redraw ONLY when one of those actually changes.
-var string lastSrc = na
-var int    lastBar = na
-// gravData is written on its OWN cadence (a long interval, or the panel's reload button),
-// so it has to be part of the change test. Without it, a gravity level that moved between
-// bars would not appear until the next bar closed — up to five minutes of the chart
-// showing a level Nexus had already replaced.
-var string lastGrav = na
-if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != lastGrav)
-    lastSrc := src
-    lastBar := bar_index
-    lastGrav := gravData
+// 20s runtime limit" warning. Nothing here depends on price, only on the strings and the
+// bar we anchor to, so redraw ONLY when one of those actually changes.
+var string lastSrc   = na
+var int    lastBar   = na
+// gravData is written on its OWN cadence, so it has to be part of the change test.
+// Without it, a gravity level that moved between bars would not appear until the next bar
+// closed — up to five minutes of the chart showing a level Nexus had already replaced.
+var string lastGrav  = na
+// Same argument for the order: reordering the columns must repaint immediately, not at
+// the next bar close.
+var string lastOrder = na
+
+if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != lastGrav or colOrder != lastOrder)
+    lastSrc   := src
+    lastBar   := bar_index
+    lastGrav  := gravData
+    lastOrder := colOrder
     // NOTE: guard the loops. In Pine `for i = 0 to -1` counts DOWN and executes,
     // so an unguarded loop over an empty array is a real bug, not a no-op.
     if array.size(lns) > 0
@@ -340,6 +456,8 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
         for i = 0 to array.size(lbs) - 1
             label.delete(array.get(lbs, i))
         array.clear(lbs)
+
+    ord = drawOrder(colOrder)
 
     float maxP = na // track the top level so the title row can sit above it
     float minP = na
@@ -353,173 +471,141 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                 item = array.get(items, i)
                 if str.length(item) > 0
                     f     = str.split(item, ":")
-                    price = str.tonumber(array.get(f, 0))
-                    score = array.size(f) > 2 ? array.get(f, 2) : ""
-                    oi    = array.size(f) > 3 ? array.get(f, 3) : ""
-                    gex   = array.size(f) > 4 ? array.get(f, 4) : ""
-                    // 6th field gates the line: "0" = bubbles only, anything else
-                    // (incl. absent, for manual/legacy entry) = draw the line.
-                    lineOn = array.size(f) > 5 ? (array.get(f, 5) != "0") : true
-                    // 7th field = Nexus's own score-number color "r-g-b-a"; used
-                    // directly (opaque) as the score TEXT color and the line color.
-                    float nr = na
-                    float ng = na
-                    float nb = na
-                    if array.size(f) > 6 and str.length(array.get(f, 6)) > 0
-                        c = str.split(array.get(f, 6), "-")
-                        if array.size(c) >= 3
-                            nr := str.tonumber(array.get(c, 0))
-                            ng := str.tonumber(array.get(c, 1))
-                            nb := str.tonumber(array.get(c, 2))
-                    hasNex = not na(nr) and not na(ng) and not na(nb)
+                    price = str.tonumber(array.get(f, F_PRICE))
                     if not na(price)
                         maxP := na(maxP) or price > maxP ? price : maxP
                         minP := na(minP) or price < minP ? price : minP
 
-                        // The GRADIENT (score-driven) colors every bubble: each box
-                        // crossfades gray -> its own color (score = Nexus color, OI/GEX =
-                        // green/red by sign) AND darkens with the score across the FULL range
-                        // (0 -> topScore), so it never flattens out — the highest-score
-                        // (really-important) levels end up the darkest / most-solid and stand
-                        // out from the translucent crowd on their own. Text is black.
-                        scoreNum = str.length(score) > 0 ? str.tonumber(score) : na
-                        popFrac  = na(scoreNum) ? 0.0 : math.max(0.0, math.min(1.0, scoreNum / topScore))
-                        // OI/GEX box intensity comes from their OWN column-relative heat
-                        // (fields 7/8, 0-100 = this value vs the biggest OI/GEX on the board
-                        // right now), so a monster GEX pops even on a low-score strike. Absent
-                        // (older data) -> fall back to the score-driven popFrac.
-                        oHeat    = array.size(f) > 7 and str.length(array.get(f, 7)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 7)) / 100.0)) : popFrac
-                        gHeat    = array.size(f) > 8 and str.length(array.get(f, 8)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 8)) / 100.0)) : popFrac
-                        // Fields 9/10/11 — age code (0 none, 1 new, 2 settling, 3 established),
-                        // share of board as a whole percent, and today's net volume as text.
-                        // Absent on older data, which simply leaves those columns blank.
-                        ageCd    = array.size(f) > 9  and str.length(array.get(f, 9))  > 0 ? str.tonumber(array.get(f, 9))  : na
-                        shareV   = array.size(f) > 10 and str.length(array.get(f, 10)) > 0 ? str.tonumber(array.get(f, 10)) : na
-                        volTxt   = array.size(f) > 11 ? array.get(f, 11) : ""
-                        // Fields 12-15 — board-relative heat for share and volume, then DEX
-                        // and its own heat. Absent on older data: share falls back to its own
-                        // magnitude, volume to the flat mid-tone it used before there was a
-                        // scale to claim, and the DEX column simply draws blank.
-                        shHeatV  = array.size(f) > 12 and str.length(array.get(f, 12)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 12)) / 100.0)) : na
-                        volHeatV = array.size(f) > 13 and str.length(array.get(f, 13)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 13)) / 100.0)) : na
-                        dexTxt   = array.size(f) > 14 ? array.get(f, 14) : ""
-                        dHeat    = array.size(f) > 15 and str.length(array.get(f, 15)) > 0 ? math.max(0.0, math.min(1.0, str.tonumber(array.get(f, 15)) / 100.0)) : 0.0
-                        // Field 16 — how many MINUTES the strike has been big, so the column can
-                        // print the actual duration instead of a letter. The letter is still what
-                        // drives the colour (field 9), so the two can never disagree.
-                        ageMinV  = array.size(f) > 16 and str.length(array.get(f, 16)) > 0 ? str.tonumber(array.get(f, 16)) : na
-                                                // Score box HUE in three HARD bands by score value (Aidan): 30-49 YELLOW,
-                        // 50-66 ORANGE, 66+ RED. No blue/pink anywhere — we ignore Nexus's own
-                        // score color for the box. OI/GEX keep their sign color (green +, red -).
-                        // All three scale OPACITY by magnitude via opacityOf (muted low, solid high).
-                        // Below 30 = noise -> GRAY (no hue at all). That's what makes the
-                        // column glanceable: only levels that matter carry color.
-                        scoreHue = na(scoreNum) ? colGray : scoreCol(scoreNum)
-                        scoreBg  = color.new(scoreHue, opacityOf(popFrac))
-                        oiBg     = color.new(signGrad(oi, oHeat),  opacityOf(oHeat))
-                        gexBg    = color.new(signGrad(gex, gHeat), opacityOf(gHeat))
-                        // Share and volume are now graded against the board, exactly like OI
-                        // and GEX: the extension sends the relative heat and the box just
-                        // renders it. Before this, share scaled against a flat 100 (so a
-                        // normal board never got past pale) and volume claimed no scale at
-                        // all (so every strike printed at one mid-tone and the column ranked
-                        // nothing). Both fall back to the old behaviour on older data.
-                        shFrac   = na(shHeatV) ? (na(shareV) ? 0.0 : math.max(0.0, math.min(1.0, shareV / 100.0))) : shHeatV
-                        shareBg  = color.new(color.teal, opacityOf(shFrac))
-                        vFrac    = na(volHeatV) ? 0.62 : volHeatV
-                        volBg    = color.new(signGrad(volTxt, vFrac), opacityOf(vFrac))
-                        // DEX is a signed magnitude like GEX, so it reads the same way:
-                        // green long / red short, intensity by size against the board.
-                        dexBg    = color.new(signGrad(dexTxt, dHeat), opacityOf(dHeat))
-                        // Age is three states, not a magnitude: gray / amber / green.
-                        ageHue   = na(ageCd) ? colGray : ageCd >= 3 ? color.green : ageCd >= 2 ? color.orange : colGray
-                        ageBg    = color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0))
-                        // THE DURATION, NOT A LETTER YOU HAVE TO DECODE.
-                        //
-                        // N/S/E needed a legend every time; "45m" and "3.5h" do not, and they also
-                        // separate a level that just crossed two hours from one that has held all
-                        // session — both of which used to print the same "E". The colour still comes
-                        // from the band (gray / amber / green), so the glance read is unchanged.
-                        // Under an hour reads in minutes; above it, in hours to one decimal with a
-                        // bare "2h" when it lands flat. Falls back to the letter on older data.
-                        ageHrs   = na(ageMinV) ? na : ageMinV / 60.0
-                        ageLong  = na(ageMinV) ? "" : ageMinV < 60 ? str.tostring(math.round(ageMinV)) + "m" : str.tostring(math.round(ageHrs * 10) / 10, "#.#") + "h"
-                        ageTxt   = na(ageCd) or ageCd < 1 ? "" : str.length(ageLong) > 0 ? ageLong : (ageCd >= 3 ? "E" : ageCd >= 2 ? "S" : "N")
-                        // Line matches the score band color (no Nexus blue/pink on the lines either).
-                        lineCol  = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
+                        score  = fTxt(f, F_SCORE)
+                        oi     = fTxt(f, F_OI)
+                        gex    = fTxt(f, F_GEX)
+                        dexTxt = fTxt(f, F_DEX)
+                        volTxt = fTxt(f, F_VOL)
+                        // F_LINE gates the dotted line: "0" = bubbles only, anything else
+                        // (including absent, for hand-typed entries) = draw it.
+                        lineOn = array.size(f) > F_LINE ? (array.get(f, F_LINE) != "0") : true
 
-                        // Only the flagged (significant, non-exported) levels keep a
-                        // dotted line; every strike still gets its bubbles below.
+                        scoreNum = str.length(score) > 0 ? str.tonumber(score) : na
+                        // Score drives the box's own darkness across the FULL range, so the
+                        // highest-score levels end up the most solid instead of the gradient
+                        // flattening out.
+                        popFrac  = na(scoreNum) ? 0.0 : math.max(0.0, math.min(1.0, scoreNum / topScore))
+                        // OI/GEX/DEX intensity is their OWN board-relative heat, so a monster
+                        // GEX pops even on a low-score strike. Absent (older feed) falls back
+                        // to the score-driven fraction.
+                        oHeatV = fHeat(f, F_OIHEAT)
+                        gHeatV = fHeat(f, F_GEXHEAT)
+                        oHeat  = na(oHeatV) ? popFrac : oHeatV
+                        gHeat  = na(gHeatV) ? popFrac : gHeatV
+                        dHeatV = fHeat(f, F_DEXHEAT)
+                        dHeat  = na(dHeatV) ? 0.0 : dHeatV
+                        shareV = fNum(f, F_SHARE)
+                        shHeatV = fHeat(f, F_SHHEAT)
+                        // Share and volume are graded against the board exactly like OI and
+                        // GEX. Before that, share scaled against a flat 100 (so a normal board
+                        // never got past pale) and volume claimed no scale at all (so every
+                        // strike printed one mid-tone and the column ranked nothing). Both
+                        // still fall back to the old behaviour on an older feed.
+                        shFrac  = na(shHeatV) ? (na(shareV) ? 0.0 : math.max(0.0, math.min(1.0, shareV / 100.0))) : shHeatV
+                        volHeatV = fHeat(f, F_VOLHEAT)
+                        vFrac   = na(volHeatV) ? 0.62 : volHeatV
+                        ageCd   = fNum(f, F_AGECD)
+                        ageMinV = fNum(f, F_AGEMIN)
+
+                        // THE DURATION, NOT A LETTER YOU HAVE TO DECODE.
+                        // N/S/E needed a legend every time; "45m" and "3.5h" do not, and they
+                        // separate a level that just crossed two hours from one that has held
+                        // all session — both of which used to print the same "E". The COLOUR
+                        // still comes from the band, so the two can never disagree.
+                        ageHrs  = na(ageMinV) ? na : ageMinV / 60.0
+                        ageLong = na(ageMinV) ? "" : ageMinV < 60 ? str.tostring(math.round(ageMinV)) + "m" : str.tostring(math.round(ageHrs * 10) / 10, "#.#") + "h"
+                        ageTxt  = na(ageCd) or ageCd < 1 ? "" : str.length(ageLong) > 0 ? ageLong : (ageCd >= 3 ? "E" : ageCd >= 2 ? "S" : "N")
+
+                        // Score box HUE: below 30 is noise and stays GRAY (no hue at all).
+                        // That is what makes the column glanceable — only levels that matter
+                        // carry colour.
+                        scoreHue = na(scoreNum) ? colGray : scoreCol(scoreNum)
+                        ageHue   = na(ageCd) ? colGray : ageCd >= 3 ? color.green : ageCd >= 2 ? color.orange : colGray
+
+                        // ---- one slot per column, filled by id --------------------------
+                        txts = array.new_string(NCOL, "")
+                        bgs  = array.new_color(NCOL, color.new(color.black, 100))
+                        drks = array.new_bool(NCOL, false)
+
+                        array.set(txts, C_SCORE, str.length(score) > 0 ? score : str.tostring(price, format.mintick))
+                        array.set(bgs,  C_SCORE, color.new(scoreHue, opacityOf(popFrac)))
+                        array.set(drks, C_SCORE, not na(scoreNum) and scoreNum >= 62)
+
+                        array.set(txts, C_OI, oi)
+                        array.set(bgs,  C_OI, color.new(signGrad(oi, oHeat), opacityOf(oHeat)))
+                        array.set(drks, C_OI, oHeat >= 0.62)
+
+                        array.set(txts, C_GEX, gex)
+                        array.set(bgs,  C_GEX, color.new(signGrad(gex, gHeat), opacityOf(gHeat)))
+                        array.set(drks, C_GEX, gHeat >= 0.62)
+
+                        array.set(txts, C_DEX, dexTxt)
+                        array.set(bgs,  C_DEX, color.new(signGrad(dexTxt, dHeat), opacityOf(dHeat)))
+                        array.set(drks, C_DEX, dHeat >= 0.62)
+
+                        array.set(txts, C_SHARE, na(shareV) ? "" : str.tostring(shareV) + "%")
+                        array.set(bgs,  C_SHARE, color.new(color.teal, opacityOf(shFrac)))
+                        array.set(drks, C_SHARE, shFrac >= 0.62)
+
+                        array.set(txts, C_VOL, volTxt)
+                        array.set(bgs,  C_VOL, color.new(signGrad(volTxt, vFrac), opacityOf(vFrac)))
+                        array.set(drks, C_VOL, vFrac >= 0.62)
+
+                        array.set(txts, C_AGE, ageTxt)
+                        array.set(bgs,  C_AGE, color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0)))
+                        array.set(drks, C_AGE, not na(ageCd) and ageCd >= 3)
+
+                        // Line matches the score band colour (no Nexus blue/pink on lines).
+                        lineCol = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
                         if lineOn and enabled
                             ln = line.new(bar_index - 1, price, bar_index, price,
                                  extend = spanFull ? extend.both : extend.none,
                                  color = lineCol, width = lineWidth, style = styleOf(lineStyleI))
                             array.push(lns, ln)
-                        if showLabels and enabled
-                            // Three fixed columns so they line up under the title row:
-                            // score, OI Neto, GEX. A missing value just leaves its gap.
-                            // One size for all; low-score numbers just fade a little.
-                            sTxt = str.length(score) > 0 ? score : str.tostring(price, format.mintick)
-                            // `slot` advances only for columns actually drawn, so turning
-                            // one off closes the gap instead of leaving a blank lane.
-                            slot = 0.0
-                            if showScore
-                                drawBubble(labelOff + math.round(slot * bubbleGap) + math.round(bubbleGap * SCORE_NUDGE) + SCORE_BUMP, price, sTxt, txtOn(not na(scoreNum) and scoreNum >= 62), scoreBg, effSz, false)
-                                slot += 1.0
-                            if showOi
-                                drawBubble(labelOff + math.round(slot * bubbleGap), price, oi, txtOn(oHeat >= 0.62), oiBg, effSz, false)
-                                slot += 1.0
-                            if showGex
-                                drawBubble(labelOff + math.round(slot * bubbleGap) + math.round(bubbleGap * GEX_NUDGE), price, gex, txtOn(gHeat >= 0.62), gexBg, effSz, false)
-                                slot += 1.0
-                            if showDex
-                                drawBubble(labelOff + math.round(slot * bubbleGap), price, dexTxt, txtOn(dHeat >= 0.62), dexBg, effSz, false)
-                                slot += 1.0
-                            if showShare
-                                drawBubble(labelOff + math.round(slot * bubbleGap), price, na(shareV) ? "" : str.tostring(shareV) + "%", txtOn(shFrac >= 0.62), shareBg, effSz, false)
-                                slot += SHARE_SLOT
-                            if showVol
-                                drawBubble(labelOff + math.round(slot * bubbleGap), price, volTxt, txtOn(vFrac >= 0.62), volBg, effSz, false)
-                                slot += 1.0
-                            if showAge
-                                drawBubble(labelOff + math.round(slot * bubbleGap), price, ageTxt, txtOn(not na(ageCd) and ageCd >= 3), ageBg, effSz, false)
 
-    // Header row above the top level, labelling each column.
+                        // ---- THE data loop. One block, any number of columns, any order.
+                        // `slot` advances only for columns actually drawn, so turning one off
+                        // closes its gap instead of leaving a blank lane. It is a float
+                        // because %BD advances by a fraction; every offset is rounded at the
+                        // point of use, since a bar offset must be an int.
+                        if showLabels and enabled
+                            slot = 0.0
+                            for oi2 = 0 to NCOL - 1
+                                ci = array.get(ord, oi2)
+                                if colShow(ci)
+                                    off = labelOff + math.round(slot * bubbleGap) + math.round(bubbleGap * colNudge(ci)) + colBump(ci)
+                                    drawBubble(off, price, array.get(txts, ci), txtOn(array.get(drks, ci)), array.get(bgs, ci), effSz)
+                                    slot += colAdv(ci)
+
+    // ---- the header row, from the SAME table and the SAME order ---------------
+    // It cannot drift from the data any more: both walk `ord` and both advance by
+    // colAdv(). The only difference is colBump(), which the centred header chip does
+    // not need — and that difference now lives in one named function instead of being
+    // implicit in two hand-written blocks.
     if showTitle and enabled and not na(maxP)
         titleP = maxP + math.max((maxP - minP) * hdrGapPct / 100.0, maxP * 0.0008)
         hSlot = 0.0
-        if showScore
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift + math.round(bubbleGap * SCORE_NUDGE), titleP, "SCORE")
-            hSlot += 1.0
-        if showOi
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "OI")
-            hSlot += 1.0
-        if showGex
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift + math.round(bubbleGap * GEX_NUDGE), titleP, "GEX")
-            hSlot += 1.0
-        if showDex
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "DEX")
-            hSlot += 1.0
-        if showShare
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "%BD")
-            hSlot += SHARE_SLOT
-        if showVol
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "VOL")
-            hSlot += 1.0
-        if showAge
-            drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift, titleP, "AGE")
+        for oi2 = 0 to NCOL - 1
+            ci = array.get(ord, oi2)
+            if colShow(ci)
+                drawHeader(labelOff + math.round(hSlot * bubbleGap) + hdrShift + math.round(bubbleGap * colNudge(ci)), titleP, colTitle(ci))
+                hSlot += colAdv(ci)
 
-    // ---- the gravity level ------------------------------------------------
+    // ---- the gravity level ----------------------------------------------------
     //
     // Drawn from its own input rather than from the strike string, because it is read on
     // a different cadence and must survive a sync that didn't refresh it.
     if showGrav and str.length(gravData) > 0
         gf     = str.split(gravData, ":")
-        gPrice = array.size(gf) > 0 and str.length(array.get(gf, 0)) > 0 ? str.tonumber(array.get(gf, 0)) : na
-        gKlass = array.size(gf) > 1 ? array.get(gf, 1) : ""
-        gProb  = array.size(gf) > 2 and str.length(array.get(gf, 2)) > 0 ? str.tonumber(array.get(gf, 2)) : na
-        gTgt   = array.size(gf) > 3 and str.length(array.get(gf, 3)) > 0 ? str.tonumber(array.get(gf, 3)) : na
-        gHeld  = array.size(gf) > 4 and str.length(array.get(gf, 4)) > 0 ? str.tonumber(array.get(gf, 4)) : na
+        gPrice = fNum(gf, 0)
+        gProb  = fNum(gf, 2)
+        gTgt   = fNum(gf, 3)
+        gHeld  = fNum(gf, 4)
         if not na(gPrice)
             // DRAWN LAST, ON PURPOSE. Within one indicator TradingView paints in creation
             // order, so whatever is made last sits on top. Gravity is the one level here
@@ -546,25 +632,25 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
             array.push(lns, gLine)
             // THE ARROW POINTS AT THE REACH, NOT AT GRAVITY.
             //
-            // It used to mean "which way price must move to get to the gravity level",
-            // which is backwards for reading: gravity is where you already are looking,
-            // and the reach candidate is where the model expects price to GO. With price
-            // at 732.5, gravity 727 and reach 733, the old rule drew a down arrow on a
-            // level whose target was above.
+            // It used to mean "which way price must move to reach the gravity level", which
+            // is backwards for reading: gravity is where you already are looking, and the
+            // reach candidate is where the model expects price to GO. With price at 732.5,
+            // gravity 727 and reach 733, the old rule drew a down arrow on a level whose
+            // target was above.
             //
-            // So: up when the reach sits above the gravity level, down when below. With no
-            // reach to point at, fall back to the old price-relative meaning rather than
-            // guessing, and when the reach IS this level there is no direction to give —
-            // the report's "treat it as a magnet rather than a wall" case — so no arrow.
+            // So: up when the reach sits above gravity, down when below. With no reach to
+            // point at, fall back to the price-relative meaning rather than guessing; and
+            // when the reach IS this level there is no direction to give — the report's
+            // "treat it as a magnet rather than a wall" case — so no arrow.
             gHasTgt = not na(gTgt) and gTgt != gPrice
-            gUp    = gHasTgt ? gTgt > gPrice : gPrice > close
-            gArrow = gHasTgt ? (gUp ? "▲" : "▼") : (na(gTgt) ? (gPrice > close ? "▲" : "▼") : "")
-            gAge   = na(gHeld) ? "" : gHeld < 60 ? str.tostring(math.round(gHeld)) + "m" : str.tostring(math.round(gHeld / 6.0) / 10, "#.#") + "h"
+            gUp     = gHasTgt ? gTgt > gPrice : gPrice > close
+            gArrow  = gHasTgt ? (gUp ? "▲" : "▼") : (na(gTgt) ? (gPrice > close ? "▲" : "▼") : "")
+            gAge    = na(gHeld) ? "" : gHeld < 60 ? str.tostring(math.round(gHeld)) + "m" : str.tostring(math.round(gHeld / 6.0) / 10, "#.#") + "h"
             // ONE LINE. The classification (DOMINANT STRUCTURE / REACH CANDIDATE /
             // CONFLUENCE) was a second line under the price, which doubled the label's
             // height for a phrase that does not change what you do about the level. The
             // extension still reads it; it just is not worth two lines of chart.
-            gTxt   = (str.length(gArrow) > 0 ? gArrow + " " : "") + "GRAVITY " + str.tostring(gPrice, format.mintick) +
+            gTxt = (str.length(gArrow) > 0 ? gArrow + " " : "") + "GRAVITY " + str.tostring(gPrice, format.mintick) +
                  (na(gProb) ? "" : " · " + str.tostring(math.round(gProb)) + "%") +
                  (str.length(gAge) > 0 ? " · " + gAge : "")
             gLab = label.new(bar_index + gravLabOff, gPrice, gTxt,
