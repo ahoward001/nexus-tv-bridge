@@ -6,6 +6,73 @@ Newest first.
 
 ---
 
+## v6.9.0.9 — 2026-09-30
+
+**A level next to one of Nexus's own walls is now a reason to draw, not a reason to hide.**
+
+Adjacency used to suppress: a strike within a strike or two of an exported wall needed a
+clean 3-of-3 to earn a line, on the theory it was the wall's shoulder rather than a level
+of its own. That was removed in September after 719 — carrying 3x the GEX and 2.5x the OI
+of the 720 Call Wall beside it — was suppressed as that wall's shoulder. Since then
+adjacency has simply been neutral.
+
+Neutral is not what you want next to a wall. A concentration there is where a wall is
+thickening or a second one is forming, which is the thing worth seeing coming. So
+adjacency now works in your favour:
+
+- **It ranks.** Beside a Nexus level, a strike sorts ahead of an equally-supported one out
+  in open space.
+- **It exempts from the score floor.** A 2-of-3 strike adjacent to an exported level draws
+  without clearing score >= 20. In open space that floor keeps noise out; beside a wall it
+  was keeping out the one thing worth seeing. Measured on the test board: strike 737, with
+  4.5x the wall's OI and GEX but a score of 12, drew **nothing** before this change and
+  now leads the list.
+
+Sitting EXACTLY ON an exported level still suppresses — Nexus already draws that one — and
+a 3-of-3 sweep still overrides even that.
+
+**And the comment that said the opposite is gone.** The block above `adjacentToExport`
+still described the blocking rule that was deleted in September, thirty lines above
+another comment correctly saying adjacency no longer blocks. The code was right; the
+comment was a trap for whoever read it next.
+
+`.tooling/test-line-rules.mjs` is new — nine checks over the line engine, which has run
+unguarded since August. It pins the exported-level suppression, the 3-of-3 override, the
+adjacency exemption, the never-draw-nothing fallback, and that every distance is measured
+in STRIKES so a 25-point NDX chain behaves like a 1-point QQQ one.
+
+### Recent
+
+**v6.8.0.9** — The Pine script is rebuilt around a column table, and the columns can be reordered
+
+**v6.7.2.8** — The custom blanks collapse again when they're not in use
+
+**v6.7.1.8** — The column rows now fit on one line each, in fixed columns
+
+**v6.7.0.8** — Per-column sensitivity. Every column decides for itself which strikes it wants to see
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.8.0.9 — 2026-09-28
 
 **The Pine script is rebuilt around a column table, and the columns can be reordered.**
