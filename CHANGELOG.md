@@ -6,6 +6,80 @@ Newest first.
 
 ---
 
+## v6.10.0.10 — 2026-09-30
+
+**The installer now checks whether the chart's indicator actually moved — and migrates it
+when it didn't, carrying your settings across.**
+
+The update path has always refused to add a second instance, on the correct premise that
+saving the script re-applies it to the one already on the chart, which is what preserves
+tuned inputs. Usually true. Not always.
+
+TradingView pins each chart instance to a script VERSION and prints it in the legend.
+Observed 2026-09-30, after an update that reported success:
+
+```
+Nexus Strike Metrics · 60.0   Normal 3 32 12 Above 2 …   <- tuned, holding the data
+Nexus Strike Metrics · 61.0   Normal 3 44 15 Above 2 …   <- code defaults, empty
+```
+
+`32 12` is a tuned Label offset and Bubble spacing; `44 15` are the code defaults. A
+pinned instance survives the save untouched — so the **instance count is identical**, and
+counting instances was the only post-check there was. The run said "done" while the chart
+carried on drawing the previous script.
+
+Now it compares the version the legend prints, before and after. Three outcomes:
+
+- **Moved** — normal, nothing else happens.
+- **Didn't move** — the instance is migrated: read its inputs, remove it, re-add on the
+  new version, write the inputs back. Reading happens FIRST, so nothing is destroyed
+  before its settings are safely in memory, and a failure to read aborts before removing
+  anything.
+- **Version unreadable** — no migration, and it says so rather than guessing. Migrating on
+  an unknown is how you get duplicates, which is the failure this whole change exists to
+  prevent.
+
+The two huge data inputs (the strike string and gravity) are deliberately NOT carried
+across. The next sync rewrites them, and restoring a stale board would put numbers on the
+chart that no longer match Nexus.
+
+Thirteen checks in `.tooling/test-installer-version.mjs` pin the version parser against
+the exact legend strings observed, including a bullet separator, a multi-part version, and
+the three "don't migrate" guards — because a false positive there re-adds an indicator
+that was already fine.
+
+### Recent
+
+**v6.9.1.10** — No reach, no arrow
+
+**v6.9.0.9** — A level next to one of Nexus's own walls is now a reason to draw, not a reason to hide
+
+**v6.8.0.9** — The Pine script is rebuilt around a column table, and the columns can be reordered
+
+**v6.7.2.8** — The custom blanks collapse again when they're not in use
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.9.1.10 — 2026-09-30
 
 **No reach, no arrow.**
