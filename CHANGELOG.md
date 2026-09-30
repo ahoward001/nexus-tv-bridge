@@ -6,6 +6,71 @@ Newest first.
 
 ---
 
+## v6.9.1.10 — 2026-09-30
+
+**No reach, no arrow.**
+
+The arrow on the gravity label means one thing: where the model expects price to GO. With
+a reach candidate that is well defined — up when the reach sits above the gravity level,
+down when below.
+
+With NO reach at all, there is no direction to report, and the label invented one anyway.
+It fell back to `gPrice > close`, which says only whether the level happens to sit above
+or below the last trade — geometry the label already shows, since the price is printed
+right there next to it, dressed up as a forecast. A dominant structure with no reach
+candidate is a magnet with no stated pull, and the honest rendering of "we don't know" is
+nothing at all. (Aidan: "if there's a dominant gravity structure and no reach, we don't
+know direction... we shouldn't have an arrow.")
+
+A reach that IS the gravity level was already silent. Both cases now behave the same way,
+for the same stated reason.
+
+**Also in this release — the adjacency change from v6.9.0.9, corrected.** That version did
+two things for a strike beside one of Nexus's walls: exempted it from the score floor, and
+promoted it in the ranking. Only the first was asked for. The second is wrong on its own
+terms — the keeper list is uncapped by default, so ranking decides presentation and not
+visibility, and a strike beside a wall is near price by construction, so the existing
+proximity tiebreak already surfaces it. Ordering stays proximity to spot.
+
+v6.9.1.9 was built with that revert but its release was interrupted and never published,
+so v6.9.0.9 is what has been live. This supersedes it.
+
+NOTE: the Pine digit moved (9 -> 10), so the chart's indicator needs the new source. The
+extension offers it directly — the "Outdated Pine script" prompt on the chart pastes it
+over the existing script and keeps your settings.
+
+### Recent
+
+**v6.9.0.9** — A level next to one of Nexus's own walls is now a reason to draw, not a reason to hide
+
+**v6.8.0.9** — The Pine script is rebuilt around a column table, and the columns can be reordered
+
+**v6.7.2.8** — The custom blanks collapse again when they're not in use
+
+**v6.7.1.8** — The column rows now fit on one line each, in fixed columns
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.9.0.9 — 2026-09-30
 
 **A level next to one of Nexus's own walls is now a reason to draw, not a reason to hide.**
