@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.9.0.9
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.9.1.10
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -642,9 +642,26 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
             // point at, fall back to the price-relative meaning rather than guessing; and
             // when the reach IS this level there is no direction to give — the report's
             // "treat it as a magnet rather than a wall" case — so no arrow.
+            // NO REACH, NO ARROW.
+            //
+            // The arrow means one thing: where the model expects price to GO. With a reach
+            // candidate that is well defined — up when it sits above the gravity level,
+            // down when below.
+            //
+            // With NO reach at all, there is no direction to report, and this used to
+            // invent one anyway: it fell back to `gPrice > close`, which only says whether
+            // the level happens to sit above or below the last trade. That is geometry the
+            // label already shows — the price is right there next to it — dressed up as a
+            // forecast. A dominant structure with no reach candidate is a magnet with no
+            // stated pull, and the honest rendering of "we don't know" is nothing at all.
+            // (Aidan, 2026-09-30: "if there's a dominant gravity structure and no reach, we
+            // don't know direction... we shouldn't have an arrow.")
+            //
+            // Same for a reach that IS this level: no direction to give, so no arrow. That
+            // case was already silent; this makes both behave the same way for one reason.
             gHasTgt = not na(gTgt) and gTgt != gPrice
-            gUp     = gHasTgt ? gTgt > gPrice : gPrice > close
-            gArrow  = gHasTgt ? (gUp ? "▲" : "▼") : (na(gTgt) ? (gPrice > close ? "▲" : "▼") : "")
+            gUp     = gHasTgt and gTgt > gPrice
+            gArrow  = gHasTgt ? (gUp ? "▲" : "▼") : ""
             gAge    = na(gHeld) ? "" : gHeld < 60 ? str.tostring(math.round(gHeld)) + "m" : str.tostring(math.round(gHeld / 6.0) / 10, "#.#") + "h"
             // ONE LINE. The classification (DOMINANT STRUCTURE / REACH CANDIDATE /
             // CONFLUENCE) was a second line under the price, which doubled the label's
