@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.11.1.10
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.12.0.11
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -152,6 +152,13 @@ SHARE_SLOT = 0.62
 // where a centred one does, and the score box is only one or two characters wide.
 SCORE_BUMP = 1
 lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", "Dotted"], group = "Style")
+// A DISPUTED GAMMA FLIP GETS ITS OWN COLOUR, because it does not mean what the other
+// lines mean. Every other line says "this strike is significant". This one says "the
+// chart you are looking at is out of date" — the dashboard's card has moved the flip and
+// the export Nexus draws from has not caught up yet. Different claim, different colour.
+flipCol    = input.color(#b14cff, "Disputed Gamma Flip", group = "Style",
+     tooltip = "Drawn when the Gamma Flip on the Nexus card disagrees with the one in the export " +
+     "the chart is drawn from. It marks the CARD's price — the newer of the two.")
 spanFull   = input.bool(true, "Span full width", group = "Style",
      tooltip = "Extend each level line all the way across the chart. Off = just a tick at the level.")
 
@@ -482,8 +489,14 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                         dexTxt = fTxt(f, F_DEX)
                         volTxt = fTxt(f, F_VOL)
                         // F_LINE gates the dotted line: "0" = bubbles only, anything else
-                        // (including absent, for hand-typed entries) = draw it.
-                        lineOn = array.size(f) > F_LINE ? (array.get(f, F_LINE) != "0") : true
+                        // (including absent, for hand-typed entries) = draw it. "2" means
+                        // the extension found the card and the export disagreeing about
+                        // the Gamma Flip, and this is the card's price — so it is drawn in
+                        // its own colour. An older Pine simply reads "2" as "not 0" and
+                        // draws an ordinary line, which is the right thing to degrade to.
+                        lineFlag = array.size(f) > F_LINE ? array.get(f, F_LINE) : "1"
+                        lineOn   = lineFlag != "0"
+                        disputed = lineFlag == "2"
 
                         scoreNum = str.length(score) > 0 ? str.tonumber(score) : na
                         // Score drives the box's own darkness across the FULL range, so the
@@ -560,12 +573,19 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                         array.set(bgs,  C_AGE, color.new(ageHue, opacityOf(na(ageCd) ? 0.0 : ageCd / 3.0)))
                         array.set(drks, C_AGE, not na(ageCd) and ageCd >= 3)
 
-                        // Line matches the score band colour (no Nexus blue/pink on lines).
-                        lineCol = color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
+                        // Line matches the score band colour (no Nexus blue/pink on lines) —
+                        // except a disputed flip, which carries its own colour and is always
+                        // DOTTED, so it reads as a different kind of statement even at a glance
+                        // on a board where everything else is dashed.
+                        lineCol = disputed
+                             ? color.new(flipCol, math.max(0.0, math.min(100.0, 0 + 100.0 * (fadeAll / 100.0))))
+                             : color.new(scoreHue, math.max(0.0, math.min(100.0, 8 + (100.0 - 8) * (fadeAll / 100.0))))
                         if lineOn and enabled
                             ln = line.new(bar_index - 1, price, bar_index, price,
                                  extend = spanFull ? extend.both : extend.none,
-                                 color = lineCol, width = lineWidth, style = styleOf(lineStyleI))
+                                 color = lineCol,
+                                 width = disputed ? math.max(lineWidth, 2) : lineWidth,
+                                 style = disputed ? line.style_dotted : styleOf(lineStyleI))
                             array.push(lns, ln)
 
                         // ---- THE data loop. One block, any number of columns, any order.
