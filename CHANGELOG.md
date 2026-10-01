@@ -6,6 +6,78 @@ Newest first.
 
 ---
 
+## v6.12.0.11 — 2026-10-01
+
+**A Gamma Flip the cards and the export disagree about now gets its own line.**
+
+The dashboard CARDS lead and the EXPORT lags — Nexus republishes the batch on its own
+cadence, so when the flip moves there is a window where the card says one price and the
+chart is still drawing the old one. Nothing on the chart showed that. The old flip kept
+its line, the new price was just another strike, and the gap was invisible at exactly the
+moment it mattered most.
+
+The disagreement is now the signal. When the card's Gamma Flip differs from the export's,
+the CARD's price — the newer of the two — is drawn as a **purple dotted line** of its own.
+Different claim from every other line on the board, so a different colour: the others say
+"this strike is significant", this one says "the chart you are looking at is out of date".
+
+**Irrespective of everything else**, as asked. It is appended after the per-column
+selection, after the Pine label cap, and after the lines-off switch — all of which are
+preferences about ordinary levels, and none of which should be able to hide a staleness
+warning. The card's flip is often fractional (740.9) and need not be a strike at all, so
+it is added as its own entry rather than flagged on a row; it carries no score/OI/GEX and
+draws a bare line with no bubbles.
+
+On the wire it is `line = "2"`. An older Pine reads anything but `"0"` as "draw", so it
+still gets a line there — just in the ordinary colour. Fifteen checks in
+`.tooling/test-flip-dispute.mjs` pin the tolerance (a rounding-sized gap is not a dispute),
+that a missing value on either side never invents one, and that it survives the cap and the
+lines-off switch.
+
+**Also fixed: `softRefreshTab` has never once worked.** It read a bare `sameUrl`, a
+variable belonging to a different function, so every call threw `ReferenceError` before
+reading anything — and the surrounding catch turned that into a silent `return null`,
+indistinguishable from "the toggle didn't help". The soft path has always fallen through
+to a full reload.
+
+It was found by a new scope lint, written after `versionBefore` shipped with exactly that
+shape. `node --check` cannot see either: both parse fine and only throw at runtime, on a
+path that needs a click to reach. `.tooling/test-scope-lint.mjs` now fails the build on a
+const declared in one function and used in another, and it was verified by re-introducing
+the `sameUrl` bug and watching it catch it.
+
+### Recent
+
+**v6.11.1.10** — "Working — leave this tab in front…" forever
+
+**v6.11.0.10** — recorded
+
+**v6.10.0.10** — instance count is identical
+
+**v6.9.1.10** — No reach, no arrow
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.11.1.10 — 2026-10-01
 
 **A run can no longer hang silently, and the stale-instance check now works on a normal
