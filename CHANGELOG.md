@@ -6,6 +6,62 @@ Newest first.
 
 ---
 
+## v6.12.1.11 — 2026-10-01
+
+**The Firefox build shipped with a bug the Chrome build had already had fixed.**
+
+v6.12.0.11 went out with the `versionBefore` ReferenceError still live in
+`nexus-tradingview-bridge-firefox/pine-installer.js`. The fix was made in the Chrome tree
+and that release mirrored `nexus-strike-metrics.pine` and `background.js` by hand — and
+missed the installer. Anyone on Firefox clicking "Update it" got the hang that the Chrome
+build had stopped producing two releases earlier.
+
+Mirrored now. More importantly, two checks exist so it cannot happen quietly again:
+
+- **`.tooling/test-build-parity.mjs`** — the seven shared files must be byte-identical
+  across the two builds, and `background.js` must be the Chrome file with exactly one
+  known transform applied (Firefox MV3 has no service worker, so its `importScripts` is
+  guarded). Rather than describing that difference loosely, the test APPLIES the transform
+  and demands a byte-for-byte match, so anything else is drift by definition. Manifest
+  versions must agree too, or one build ships stamped as the other.
+- **`.tooling/test-scope-lint.mjs`** now lints BOTH trees. It was only ever reading the
+  Chrome one, which is the direct reason a ReferenceError it already knew how to catch
+  sailed into the Firefox package.
+
+Mirroring by hand on each release was always going to miss a file eventually. It did.
+
+### Recent
+
+**v6.12.0.11** — A Gamma Flip the cards and the export disagree about now gets its own line
+
+**v6.11.1.10** — "Working — leave this tab in front…" forever
+
+**v6.11.0.10** — recorded
+
+**v6.10.0.10** — instance count is identical
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.12.0.11 — 2026-10-01
 
 **A Gamma Flip the cards and the export disagree about now gets its own line.**
