@@ -6,6 +6,76 @@ Newest first.
 
 ---
 
+## v6.13.1.11 — 2026-10-02
+
+**No arrow on the gravity line unless Nexus actually published a direction.**
+
+Gravity says where the pull is; reach says where it probably goes, and the arrow on the
+overlay is a claim about reach. Since the arrow shipped, it has drawn on every single sync —
+pointing down — whether or not there was a direction to point in.
+
+The parser was matching on the wrong thing. It looked for the heading "Highest touch
+probability" and took the first number after it. That heading appears on the Gravity panel in
+two completely different roles:
+
+* **When reach exists**, it titles its own hero card beside the active level, badged
+  `REACH CANDIDATE`, with a **price** under it — `749.0` — and the footnote "Highest estimated
+  reach; may differ from the level with the greatest structural weight."
+* **When reach does not exist**, that card is simply absent, and the only "Highest touch
+  probability" left on the page is a small stat card holding a **percentage** — `91.9%`.
+
+In the second case the parse didn't fail, which is why this survived so long. The helper
+needs an uppercase run in front of a number, `91.9` has none, so it walked straight past that
+card and matched the *next* stat — reporting `AVERAGE TOUCH PROBABILITY` / **49.7** as a reach.
+49.7 sits below any QQQ level, so the arrow pointed down, forever, on nothing.
+
+So the **badge** is the test now, not the heading: it is a reach only where Nexus says
+`REACH CANDIDATE` (`alcance` in es/pt). Every occurrence of the heading is scanned and the
+first properly badged one wins, so this still holds if the hero card and the stat card ever
+swap places in the DOM. The number must also be a price beside the active level rather than a
+different order of magnitude. No badge, no reach, no arrow — which is the honest answer when
+nothing was published.
+
+Gravity readings are cached, so the same check guards the wire string and the notification
+too: a cache written by an older build still carries that 49.7, and it is now refused rather
+than drawn.
+
+Both panel states were transcribed off the live panel and are pinned in
+`.tooling/test-gravity-reach.mjs`, in English and Spanish — including the case that must keep
+working, a legitimate reach *below* the level, which points down for a real reason.
+
+### Recent
+
+**v6.13.0.11** — The disputed-Gamma-Flip line now reads the export code instead of a stand-in for it
+
+**v6.12.1.11** — The Firefox build shipped with a bug the Chrome build had already had fixed
+
+**v6.12.0.11** — A Gamma Flip the cards and the export disagree about now gets its own line
+
+**v6.11.1.10** — "Working — leave this tab in front…" forever
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.13.0.11 — 2026-10-02
 
 **The disputed-Gamma-Flip line now reads the export code instead of a stand-in for it.**
