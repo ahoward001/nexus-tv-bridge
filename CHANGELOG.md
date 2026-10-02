@@ -6,6 +6,79 @@ Newest first.
 
 ---
 
+## v6.13.0.11 — 2026-10-02
+
+**The disputed-Gamma-Flip line now reads the export code instead of a stand-in for it.**
+
+v6.12 shipped that line and it never drew. The reason is worth stating plainly: it compared
+the card's Gamma Flip against `levelsForCurrentBatch` — which is NOT the export's flip. The
+export code had been treated as opaque for its whole life (read it, paste it, never look
+inside), so that function stood in for it with the cards as they were when the batch first
+appeared. Both sides therefore come from the cards, and on a NEW batch they are the same
+number by construction. At the open, with a fresh batch, the test could not fire at all.
+
+**The export code is not encrypted.** Read off the live Export view:
+
+```
+275♜αβ♝§Ψ♟18750¤♟●♟300♝¶Ω♟18500‡♟●♟300♝§∆♟18678¤♟●♟300…
+```
+
+`♜` splits sections, `♝` fields, `♟` parts — and `¤ ‡ § ¶` are filler, rotating and injected
+INSIDE the numbers, so `3¤700` is 3700. Strip those four and section one holds the named
+levels as price × a scale. The scale is derived from spot rather than hardcoded, because it
+differs per instrument (QQQ resolves to 25).
+
+**Which symbol is which level is LEARNED, not guessed.** One sample cannot separate them:
+with the code a batch behind, `Ψ`=750 is equally consistent with a Call Wall that has since
+moved to 755 and a Gamma Flip the chart is still drawing. Picking by eye is how the last
+several bugs happened. But the ambiguity only exists while the two sides disagree — when
+they are IN SYNC the pairing is forced. So the mapping is recorded then and applied later,
+when they diverge and the answer actually matters. Against the cards from this code's own
+batch it resolves cleanly: `Ψ` Call Wall, `Ω` Put Wall, `π` Gamma Flip. Cards that have
+moved on teach nothing.
+
+**The tolerance is a strike, not a hair.** The code encodes whole strikes (742) while the
+card carries decimals (742.65). At the old 0.01 every sync would have read as a dispute and
+the chart would never be without a purple line. A gap under 0.75 is encoding precision; a
+gap over it is a disagreement.
+
+The old cards-at-paste-time comparison survives as a fallback for when the code cannot be
+decoded at all, and the log says which source answered. Sixteen checks in
+`.tooling/test-export-decode.mjs` pin the decode against a real captured code, including
+that a bad code yields null rather than a confident wrong number.
+
+### Recent
+
+**v6.12.1.11** — The Firefox build shipped with a bug the Chrome build had already had fixed
+
+**v6.12.0.11** — A Gamma Flip the cards and the export disagree about now gets its own line
+
+**v6.11.1.10** — "Working — leave this tab in front…" forever
+
+**v6.11.0.10** — recorded
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.12.1.11 — 2026-10-01
 
 **The Firefox build shipped with a bug the Chrome build had already had fixed.**
