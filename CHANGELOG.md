@@ -6,6 +6,78 @@ Newest first.
 
 ---
 
+## v6.14.2.13 — 2026-10-05
+
+**The export code was being decoded as the wrong ticker, at an invented scale.**
+
+The decode was wrong in two independent ways, and the two errors hid each other.
+
+1. It read `split(♜)[1]` — **block one, which is always SPX**, never the chart's ticker.
+2. It invented a scale as `round(median / spot)`.
+
+On a QQQ chart those combined to turn SPX's raw `18,826` into `"753.04"` — a number that
+looks exactly like a QQQ price, which is why it survived. The indicator draws that same
+raw value as **SPX 7,765.2**. So the purple Gamma-Flip line's "does the export agree?" test
+has been comparing the QQQ card against SPX-derived numbers for its whole life.
+
+On top of that, the symbol map was *learned* from a single 2026-10-02 sample and concluded
+**Gamma Flip = π**. π is Support #1; the flip is **ϴ**. A guess that persists in storage is
+worse than no guess, so the learning is deleted and the stored map is cleared on startup.
+
+**The format, settled by pasting a live code into Nexus Futures V4.1 and reading back what
+it drew, symbol by symbol:**
+
+* `♜` splits **eleven** blocks, one per ticker, always in this order:
+  SPX · SPY · QQQ · NDX · VIX · GLD · DIA · IBIT · USO · ETHA · IWM
+* `price = raw / K + BASE`, per ticker — QQQ `4560 → 456 + 300 = 756`
+* glyphs are fixed and mean the same in every block:
+  ϴ Gamma Flip · Ψ Call Wall · Ω Put Wall · ∑ Vanna Wall · ∆ Charm Wall ·
+  λ Resist Major · μ Resist #1 · Π Support Major · π Support #1
+* `⊻` and `⊕` are not prices. A glyph is simply **absent** when that level doesn't exist.
+
+**Guards, because a changed key should say so rather than file nonsense:** anything other
+than eleven blocks returns nothing; a ticker the export doesn't carry returns nothing; and
+a block whose median level sits more than 30% from spot returns nothing. Every one of those
+degrades the flip line to *unverified*, which draws, rather than to a wrong answer.
+
+The tests are built on the real 2026-10-05 15:29:55 ET code out of the recorder, asserting
+the values Aidan's own SPY chart showed at 15:35 — **Gamma Flip 773.2, Call Wall 777, Put
+Wall 775** — plus a regression that fails if block one ever leaks back in as QQQ.
+
+Reference implementation and cross-check: `nexus-recorder/analyze/export_levels.py`.
+
+### Recent
+
+**v6.14.1.13** — The flip line stops printing its own price, and the grey one was an out-of-date chart
+
+**v6.14.0.12** — The Gamma Flip line now draws by default, and silence has to be earned
+
+**v6.13.1.11** — No arrow on the gravity line unless Nexus actually published a direction
+
+**v6.13.0.11** — The disputed-Gamma-Flip line now reads the export code instead of a stand-in for it
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.14.1.13 — 2026-10-05
 
 **The flip line stops printing its own price, and the grey one was an out-of-date chart.**
