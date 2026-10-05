@@ -6,6 +6,79 @@ Newest first.
 
 ---
 
+## v6.14.0.12 — 2026-10-05
+
+**The Gamma Flip line now draws by default, and silence has to be earned.**
+
+The rule was backwards. The purple line appeared only when a disagreement could be
+*proven* — card flip vs. the flip decoded out of the export code. That sounds right until
+you notice the third case: **the export frequently publishes no flip symbol at all.** When
+that happens there is nothing to compare against, so nothing was drawn — and "we checked
+and they agree" looked exactly like "we couldn't check." Both were a blank chart.
+
+Worse, when the export couldn't be read the code fell back to the cards-as-of-paste-time
+as a stand-in for the export. That value *equals* the live cards by construction, so it
+reported agreement every time and actively suppressed the line in precisely the case that
+could not be verified.
+
+Inverted, per Aidan: *"I want that card to always create a purple line unless the export
+gives the same value."*
+
+* The card's Gamma Flip **always** gets its own purple dotted line.
+* The **only** thing that removes it is the export publishing the same price (within a
+  strike — the export encodes whole strikes, the card carries decimals, and 753 vs 753.22
+  is encoding precision, not a disagreement).
+* The cards can no longer stand in for the export. Unverified is its own state.
+
+**Two states, told apart at a glance:**
+
+| | |
+|---|---|
+| **Purple dotted** | the export published a **different** flip — the chart may be stale |
+| **Purple dotted + ✱** | the export published **no** flip, so nothing confirmed this price |
+
+The asterisk rides on the line itself, so it can't drift away from the price it qualifies.
+
+**Other levels are untouched.** Only an entry at the same price is replaced, so a flip at
+753.1 and a custom significant level at 750 both draw — exactly as asked. The line is
+still appended after the label cap, the per-column selection and the lines-off switch,
+because those are preferences about ordinary levels and this is a warning about the chart.
+
+⚠️ **The Pine script changed in this version.** Nothing auto-updates it on any browser —
+update the indicator on your chart or the asterisk state will render as an ordinary line.
+
+### Recent
+
+**v6.13.1.11** — No arrow on the gravity line unless Nexus actually published a direction
+
+**v6.13.0.11** — The disputed-Gamma-Flip line now reads the export code instead of a stand-in for it
+
+**v6.12.1.11** — The Firefox build shipped with a bug the Chrome build had already had fixed
+
+**v6.12.0.11** — A Gamma Flip the cards and the export disagree about now gets its own line
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.13.1.11 — 2026-10-02
 
 **No arrow on the gravity line unless Nexus actually published a direction.**
