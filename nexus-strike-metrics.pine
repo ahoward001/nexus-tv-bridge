@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.14.0.12
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.14.1.13
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -551,7 +551,13 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                         bgs  = array.new_color(NCOL, color.new(color.black, 100))
                         drks = array.new_bool(NCOL, false)
 
-                        array.set(txts, C_SCORE, str.length(score) > 0 ? score : str.tostring(price, format.mintick))
+                        // A scoreless level normally falls back to printing its own price,
+                        // which is useful for a hand-typed line. It is NOISE on a flip line:
+                        // the line already sits at that price and the axis already says so
+                        // (Aidan, 2026-10-05: "you dont need to tell me the price thats
+                        // redundant"). Empty text draws no bubble at all, which is what the
+                        // flip line was always meant to be — a bare line and nothing else.
+                        array.set(txts, C_SCORE, str.length(score) > 0 ? score : (disputed ? "" : str.tostring(price, format.mintick)))
                         array.set(bgs,  C_SCORE, color.new(scoreHue, opacityOf(popFrac)))
                         array.set(drks, C_SCORE, not na(scoreNum) and scoreNum >= 62)
 
