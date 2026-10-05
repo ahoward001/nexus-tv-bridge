@@ -1,6 +1,6 @@
 //@version=5
 // =============================================================================
-// Nexus Strike Metrics for Nexus → TradingView Bridge 6.13.1.11
+// Nexus Strike Metrics for Nexus → TradingView Bridge 6.14.0.12
 // -----------------------------------------------------------------------------
 // Companion to the "Nexus Futures V3" indicator. That one draws Nexus's own
 // curated walls from the encoded export string; it can't take anything else.
@@ -156,7 +156,7 @@ lineStyleI = input.string("Dashed", "Line style", options = ["Solid", "Dashed", 
 // lines mean. Every other line says "this strike is significant". This one says "the
 // chart you are looking at is out of date" — the dashboard's card has moved the flip and
 // the export Nexus draws from has not caught up yet. Different claim, different colour.
-flipCol    = input.color(#b14cff, "Disputed Gamma Flip", group = "Style",
+flipCol    = input.color(#b14cff, "Gamma Flip (unconfirmed)", group = "Style",
      tooltip = "Drawn when the Gamma Flip on the Nexus card disagrees with the one in the export " +
      "the chart is drawn from. It marks the CARD's price — the newer of the two.")
 spanFull   = input.bool(true, "Span full width", group = "Style",
@@ -496,7 +496,13 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                         // draws an ordinary line, which is the right thing to degrade to.
                         lineFlag = array.size(f) > F_LINE ? array.get(f, F_LINE) : "1"
                         lineOn   = lineFlag != "0"
-                        disputed = lineFlag == "2"
+                        // "2" = the export published a DIFFERENT flip. "3" = the export
+                        // published none at all, so nothing confirmed this price. Both draw
+                        // the same purple dotted line, because both mean "the chart may be
+                        // out of date here"; only "3" wears the asterisk, so a proven
+                        // disagreement is never mistaken for an unchecked one.
+                        disputed   = lineFlag == "2" or lineFlag == "3"
+                        unverified = lineFlag == "3"
 
                         scoreNum = str.length(score) > 0 ? str.tonumber(score) : na
                         // Score drives the box's own darkness across the FULL range, so the
@@ -587,6 +593,17 @@ if barstate.islast and (src != lastSrc or bar_index != lastBar or gravData != la
                                  width = disputed ? math.max(lineWidth, 2) : lineWidth,
                                  style = disputed ? line.style_dotted : styleOf(lineStyleI))
                             array.push(lns, ln)
+                            // The asterisk says "nobody checked this", not "this is wrong".
+                            // It rides on the line itself so it cannot drift away from the
+                            // price it qualifies, and uses the line's own colour so it reads
+                            // as part of the same statement.
+                            if unverified
+                                ab = label.new(bar_index, price, "✱",
+                                     style     = label.style_none,
+                                     textcolor = lineCol,
+                                     size      = size.small,
+                                     text_font_family = heavyFont ? font.family_monospace : font.family_default)
+                                array.push(lbs, ab)
 
                         // ---- THE data loop. One block, any number of columns, any order.
                         // `slot` advances only for columns actually drawn, so turning one off
