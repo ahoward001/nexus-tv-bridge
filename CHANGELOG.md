@@ -6,6 +6,81 @@ Newest first.
 
 ---
 
+## v6.15.0.13 — 2026-10-06
+
+**MOM is now MOM3 — the real net delta flow over the last three minutes.**
+
+Aidan asked for the card's momentum to be the net change over the last 3 minutes, and
+asked whether that was too granular to gather. It isn't — it costs nothing extra.
+
+**This was declared impossible once, and the reasoning was right about the wrong input.**
+The earlier attempt differenced the *rendered* cumulative figure, which prints as `+11.6M`
+— one decimal at the millions scale, so ±100,000 of granularity. A real 3-minute move is
+smaller than that rounding step, so it read 0 almost every time, and the derivation was
+removed as unachievable.
+
+The numbers behind that render are not rounded. Once the institutional-flow panel mounts,
+the page holds its **whole per-minute series** — one object per minute, each with a
+timestamp, that minute's own `intervalFlow`, and the running `allDayCumulative`, to two
+decimals. At 11:12 ET on 10/06 the last minute was `intervalFlow -53,188.11` against a
+cumulative of `11,594,096` — the same figure the panel renders as "+11.6M".
+
+So MOM3 is exact, and needs no sampling over time at all:
+
+```
+11:09 AM  +107,010.76     11:11 AM  +121,163.03
+11:10 AM  +194,023.15     11:12 AM   -53,188.11   ->  MOM3 +261,998.07
+```
+
+**No extra gathering.** The series only exists on Overview, only after that panel mounts —
+which is the scroll `readFlowPanel()` already performs on the trip it already makes. The
+Export view carries none of it, and neither does a fresh page load.
+
+**Two derivations, and they must agree.** The sum of the last three minutes' `intervalFlow`
+and the difference of `allDayCumulative` across those same three minutes are the same
+quantity by construction. If they disagree, the series is not what this code thinks it is,
+and the row goes blank rather than showing a confident wrong number.
+
+**The label cannot lie about the window.** When the series isn't available the row falls
+back to Nexus's own 1-minute Momentum — and reads `MOM`, not `MOM3`, because a 1-minute
+number under a 3-minute heading is worse than no number.
+
+Removed: the old sampler that stored a reading every sync to difference later, its
+constants, and its stored `flowHistory` — dropped once on startup, since storage outlives
+an update.
+
+### Recent
+
+**v6.14.3.13** — The export block is found by spot now, not by counting blocks
+
+**v6.14.2.13** — The export code was being decoded as the wrong ticker, at an invented scale
+
+**v6.14.1.13** — The flip line stops printing its own price, and the grey one was an out-of-date chart
+
+**v6.14.0.12** — The Gamma Flip line now draws by default, and silence has to be earned
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.14.3.13 — 2026-10-05
 
 **The export block is found by spot now, not by counting blocks.**
