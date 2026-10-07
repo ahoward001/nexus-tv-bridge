@@ -6,6 +6,74 @@ Newest first.
 
 ---
 
+## v6.15.2.13 — 2026-10-07
+
+**MOM and FLOW were disappearing because the reader never reached the panel.**
+
+Both rows vanished from the card while GRAD stayed — and GRAD comes from the payload, not
+from the institutional-flow panel, so the whole flow read was failing. A row is hidden when
+its value is null, so the failure was silent.
+
+**The panel is at the bottom of a page that grows while you read it.** Measured on the live
+dashboard: the document is **~1,100px** tall on arrival and **~4,900px** once its charts
+have loaded, and the flow panel sits near the bottom at **~3,900px**. The old reader walked
+to `scrollHeight × i/8` — eight proportional steps against the *early* height, which is a
+much shorter page than the one it ends up on. It ran out of steps partway down.
+
+It hid because it failed in the one direction nobody checks: a tab that has been scrolled
+by hand already has the panel mounted, so it worked whenever anyone was actually looking at
+that tab.
+
+Now it steps **a viewport at a time** — nothing can be skipped, since the mount is
+viewport-triggered — re-reads the height each pass so it follows the growth instead of
+being outrun by it, and is bounded by a deadline rather than a step count, because how many
+steps are needed depends on a height that isn't known at the start. The outer cap went 6s →
+8s: the walk has a 4s deadline of its own, and 6s left no room for the scroll restore and
+the parse, cutting otherwise-successful reads off at the end.
+
+**Being straight about the limits.** The old walk was not broken at every speed — when the
+page fills quickly both reach the panel. It failed in a *band*, and the tests pin that band
+(at 200–300px of growth per step the old walk stalls and the new one mounts) rather than
+claiming more. Below that band neither works, because the bottom of the page is still above
+the panel and no amount of stepping helps. That sync simply has no flow data.
+
+So failures now **say which failure they are**: `flow-panel-absent-on-export-view` (the
+Export view genuinely has no flow panel) versus
+`flow-panel-not-mounted(after N step(s), height 1100->4900)`, which reports how far it got
+and how much the page grew. A blank row stays blank, but it is no longer unexplained.
+
+### Recent
+
+**v6.15.1.13** — The Gamma-Flip line was eating a strike. No more holes in a contiguous run
+
+**v6.15.0.13** — MOM is now MOM3 — the real net delta flow over the last three minutes
+
+**v6.14.3.13** — The export block is found by spot now, not by counting blocks
+
+**v6.14.2.13** — The export code was being decoded as the wrong ticker, at an invented scale
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.15.1.13 — 2026-10-07
 
 **The Gamma-Flip line was eating a strike. No more holes in a contiguous run.**
