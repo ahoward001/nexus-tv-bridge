@@ -6,6 +6,78 @@ Newest first.
 
 ---
 
+## v6.16.0.13 — 2026-10-07
+
+**The flow read no longer scrolls the page. It never needed to.**
+
+Aidan, 2026-10-07: *"is scrolling the best way to handle it? what about just
+viewing/exporting the screen as a whole? Do you need to act like a human"*. No — and the
+scrolling was solving a problem that did not exist.
+
+Measured on a **fresh load, nothing touched**: at `scrollTop 0`, with
+`.institutional-flow-panel` **not mounted**, the page already carries **134 one-minute
+points** (09:30 → 11:45). Only the *chart* of the series is lazily mounted. The series
+itself is in the document the whole time.
+
+The belief that it needed mounting came from my own over-strict regex returning zero
+matches on an unscrolled page, which I read as "the data isn't here yet" instead of "my
+pattern didn't match". Everything built on top of that — the eight-step walk, the viewport
+walk that replaced it in 6.15.2.13, the mount race, the 4-second deadline, the 8-second cap
+— was work to reach something already in hand.
+
+**Verified end to end, live, with the shipped code:**
+
+| | old walk | payload read |
+|---|---|---|
+| time | up to 4,000ms | **11ms** |
+| touches the user's page | yes, scrolls and restores | **no** |
+| works on a hidden tab | no — needs paint to mount | **yes** |
+| can lose a race | yes | **no** |
+| NET DELTA FLOW | `+4.2M` (rounded) | **4,172,296.98** |
+
+At `scrollTop 0` with the panel unmounted: netFlow 4,172,296.98, momentum 195,511.12,
+MOM3 **+423,342.62** from both derivations in agreement.
+
+The scroll-and-scrape path is kept, but only as a fallback for a page shape that carries no
+series at all. The normal path never scrolls, never waits and never moves anything.
+
+**Why not screenshot the page instead?** Because that throws away precision rather than
+gaining it: the render says `+4.2M` where the data says `4,172,296.98`, and reading pixels
+would add OCR error on top of a number that is already exact in the document. The rule this
+settles: read the source, don't imitate a user.
+
+### Recent
+
+**v6.15.2.13** — MOM and FLOW were disappearing because the reader never reached the panel
+
+**v6.15.1.13** — The Gamma-Flip line was eating a strike. No more holes in a contiguous run
+
+**v6.15.0.13** — MOM is now MOM3 — the real net delta flow over the last three minutes
+
+**v6.14.3.13** — The export block is found by spot now, not by counting blocks
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.15.2.13 — 2026-10-07
 
 **MOM and FLOW were disappearing because the reader never reached the panel.**
