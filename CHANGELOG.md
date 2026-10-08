@@ -6,6 +6,97 @@ Newest first.
 
 ---
 
+## v6.17.0.13 — 2026-10-08
+
+**Pre-market boards are no longer drawn as if they were live.**
+
+Two problems were reported on 10/08. One is real and fixed here; the other turned out not
+to be a bug, and is written up below rather than "fixed".
+
+### The real one: a stale board passes every freshness check
+
+Every existing check tests the board against **itself** — the strike read's spot, the spot
+card, and the chart's own price. Before the open all three agree, on yesterday's close, so
+a uniformly stale board sails through all of them.
+
+From the recorder, `data/nexus-2026-10-08.jsonl.gz`:
+
+```
+08:05 -> 09:10 ET   latestSpot 757.9001   <- Thursday's previous close
+09:15 -> 09:20 ET   latestSpot 0
+09:25 ET            the session arrives:  755 GEX  +7.2M -> -212.2M
+```
+
+Throughout, strikes 755/756/757 carried near-identical GEX (+6.5M … +7.3M) while their net
+OI differed by thousands (−10,802 / −4,263 / −4,386). Nexus computes GEX against a spot it
+does not have yet, so the gamma term degenerates and every near-the-money strike prints the
+same number. `sign(GEX) == sign(OI)` held on **21/27** strikes pre-open against **26/28** at
+the prior close.
+
+**This is Nexus's own data, not our capture.** The payload carries those values verbatim
+and the recorder stored them faithfully, so it cannot be corrected upstream of the overlay —
+only recognised.
+
+A zero spot is separately dangerous: the label cap sorts by `|strike - spot|`, so with spot
+0 "nearest the money" silently becomes "lowest strike" and the board gets cut from the wrong
+end. That is refused now at any hour, not just before the open.
+
+So the overlay holds the last good board instead of overwriting it, and says why.
+
+### The one that wasn't: rows are not drawn a strike too high
+
+Measured against the chart's own price axis on the 10/08 screenshot:
+
+| | measured | should be |
+|---|---|---|
+| GRAVITY **line** | 754.03 | 754.00 |
+| CALL_WALL **band** | 754.13 | 754 |
+| −10.8K **bubble** | 755.40 | 755 |
+| −4K / −87M **bubble** | 754.40 | 754 |
+| −12.8K / −64.1M **bubble** | 750.42 | 750 |
+
+Every bubble sits **+0.4** above its own strike — the same constant at all three — while
+the lines are accurate to 0.03. That is the `Label float` input, which defaults to
+`"Above"` (`label.style_label_lower_left`): the body sits above the price with the pointer
+pointing down at it, exactly as its tooltip says. An off-by-one would be a whole strike and
+would not spare the lines.
+
+Nothing was changed for this. Set **Label float** to `Below` or `Up-right` in the indicator
+settings if you would rather the body sat elsewhere — the lines are the accurate part
+either way.
+
+### Recent
+
+**v6.16.1.13** — Ships what v6.16.0.13 said it shipped
+
+**v6.16.0.13** — Every export code the bridge reads is now kept
+
+**v6.15.2.13** — MOM and FLOW were disappearing because the reader never reached the panel
+
+**v6.15.1.13** — The Gamma-Flip line was eating a strike. No more holes in a contiguous run
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.16.1.13 — 2026-10-07
 
 **Ships what v6.16.0.13 said it shipped.**
