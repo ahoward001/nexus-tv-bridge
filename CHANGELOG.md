@@ -6,6 +6,87 @@ Newest first.
 
 ---
 
+## v6.17.3.13 — 2026-10-13
+
+**The Pine installer stops opening the editor on every load — built this time on what your live chart actually allows.**
+
+v6.17.2.13 fixed the right bug the wrong way. The root cause was correct: every check read
+the legend's version **badge** (`· 60.0`), which TradingView only prints when **two
+copies** of a script are on the chart, so on a normal chart the installer never learned
+anything and its "already healthy" exit could never fire — which is why the Pine editor
+opened every time the chart loaded.
+
+But the replacement leaned on two things that turned out not to exist, verified on Aidan's
+live chart on 10/13:
+
+1. **The legend's `{}` "Source code" button can't be scripted.** It is CSS-hidden (0×0)
+   until a *real* mouse hovers the row; a synthetic hover can't trigger CSS `:hover`,
+   `.click()` does nothing, and the legend isn't React so there is no handler to call.
+2. **TradingView shows no "update available" icon for your own scripts.** The row's status
+   area was empty on a chart that was pinned behind its script.
+
+Both names came from TradingView's code rather than a rendered chart. The live chart was
+the first real test, and it said no.
+
+**What it does now, using only mechanisms that work:**
+
+* **The fast exit keys on the code.** A record is marked verified with the *fingerprint of
+  the code confirmed running* — so once confirmed, a load does nothing at all until the
+  code itself changes. No editor, no dialog.
+* **Confirmation reads the running indicator through its Settings dialog**, which opens by
+  double-click and needs no editor. That's the right place: it's the instance itself.
+* **A leftover unsaved draft is cleared** during that one-time check, only ever on this
+  chart's own script, and the layout is saved — no manual Save.
+* **The editor's head is scrolled to the top before line 3 is read**, which is what made
+  the old read come back empty as "an unrecognised version".
+
+**Why the comparison is on the code, not the version number.** The extension version only
+lives in a *comment* on line 3. Comments aren't part of what the chart runs, so the running
+indicator has no knowledge of it, and the only control that displays it is the button that
+can't be scripted. Comparing the code is also the honest test: on 10/13 the chart ran code
+byte-identical to what shipped, so it was genuinely current.
+
+**One limit, stated plainly:** after an update, two builds that both have the current
+inputs look the same from the Settings dialog, so an update is recorded as unconfirmed.
+Making that exact needs a version-bearing input in the Pine itself — a deliberate, separate
+change, because putting it on an existing chart means re-adding the indicator once.
+
+Also caught before shipping: the record briefly stored a version string where the exit
+compared a fingerprint, which would have opened the Settings dialog on every load instead
+of the editor. Pinned by `test-installer-pinned.mjs`, along with both dead ends above.
+
+### Recent
+
+**v6.17.2.13** — The Pine installer now reads what your chart actually runs — and stops opening the editor on every load
+
+**v6.17.1.13** — The Gravity line now keeps itself fresh again
+
+**v6.17.0.13** — Pre-market boards are no longer drawn as if they were live
+
+**v6.16.1.13** — Ships what v6.16.0.13 said it shipped
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.17.2.13 — 2026-10-13
 
 **The Pine installer now reads what your chart actually runs — and stops opening the editor on every load.**
