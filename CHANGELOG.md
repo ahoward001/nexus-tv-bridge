@@ -6,6 +6,83 @@ Newest first.
 
 ---
 
+## v6.17.2.13 — 2026-10-13
+
+**The Pine installer now reads what your chart actually runs — and stops opening the editor on every load.**
+
+Three symptoms reported on 10/13, one root cause:
+
+* the Pine editor opened every time the chart loaded;
+* the update prompt offered *"an unrecognised version"* → a version that looked the same;
+* the legend's `{}` button showed an older, historical version of the script.
+
+Every check read the legend's version **badge** (`· 60.0`) — which TradingView only prints
+when **two copies** of a script are on the chart. On a normal one-copy chart it never
+exists, so:
+
+* the installer could never record which version the chart was on, so its "already
+  healthy, do nothing" exit **could never fire** — and every page load opened the editor
+  to peek. That is the auto-opening editor.
+* it read the version from the editor's *head* instead — on 10/13 that was an **unsaved
+  6.17.0.13 draft** — not from what the chart runs, which was **saved version 80
+  (6.16.1.13)**. Three different versions, and the read couldn't tell them apart.
+* its "did the update reach the chart?" check could never answer, so a chart left pinned
+  to the old version was never moved.
+
+**Now it uses TradingView's own signals**, read out of TradingView's code (an enum, not a
+class-name guess):
+
+* `legend-pine-action` — the `{}` button. It opens the source **this instance** runs, so
+  line 3 of that is the ground truth. That's the version the prompt now names.
+* `legend-source-item-status-icon-update` — TradingView's own *"this instance is behind
+  its script"* flag. Badge-independent, so it works with one copy.
+
+**The update now finishes the job, and checks it did:** paste and save the script (which
+clears any leftover draft), move the chart onto it with **TradingView's own update
+control** — falling back to remove-and-re-add only if that fails — then read the
+instance's source back and call it done **only if line 3 says exactly what we ship.** The
+layout is saved automatically, so you never need to press Save.
+
+Comparison is on the **whole version**, so the chart's line 3 always matches the extension
+exactly. A record is marked verified only after a real read of the instance, so the next
+load skips the editor entirely — it opens once per release, not once per load.
+
+Also caught before shipping: an edit had put a `ReferenceError` into the migrate handler's
+success path (it referenced a variable that only exists in a different handler). `node
+--check` cannot see that class of bug; the new `test-installer-pinned.mjs` pins it.
+
+### Recent
+
+**v6.17.1.13** — The Gravity line now keeps itself fresh again
+
+**v6.17.0.13** — Pre-market boards are no longer drawn as if they were live
+
+**v6.16.1.13** — Ships what v6.16.0.13 said it shipped
+
+**v6.16.0.13** — Every export code the bridge reads is now kept
+
+[Full version history →](https://github.com/ahoward001/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/ahoward001/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.17.1.13 — 2026-10-10
 
 **The Gravity line now keeps itself fresh again.**
