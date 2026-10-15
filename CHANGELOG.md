@@ -6,6 +6,58 @@ Newest first.
 
 ---
 
+## v6.17.5.13 — 2026-10-15
+
+**Pre-market strike columns sync now. The bridge no longer holds them back before the open.**
+
+6.17.4.13 only fixed the tooltip wording ("NOT updated — unknown" became "held —
+pre-market"). That missed the point. Before 9:30 ET the Nexus table is populated, and you
+use it to prepare for the open. Keeping yesterday's columns on the chart helps nobody.
+
+**Now:** every sync draws the board Nexus is showing, whatever the time. The clock never
+blocks a draw.
+
+**What still needs handling is a spot of 0.** Nexus publishes spot = 0 for a few minutes
+around 9:15–9:20 ET. A spot of 0 makes "the strikes nearest the money" mean "the lowest
+strikes", so the board would be cut from the wrong end. Instead of giving up, the bridge
+now looks for a real price: the strike read first, then Nexus's spot card, then the
+chart's own price. It only keeps the old columns if none of the three has a price, and the
+tooltip then says why rather than "unknown".
+
+Pinned by `test-preopen-board.mjs`.
+
+### Recent
+
+**v6.17.4.13** — The sync tooltip now says when the strike columns are held before the open, instead of calling it a failure
+
+**v6.17.3.13** — The Pine installer stops opening the editor on every load — built this time on what your live chart actually allows
+
+**v6.17.2.13** — The Pine installer now reads what your chart actually runs — and stops opening the editor on every load
+
+**v6.17.1.13** — The Gravity line now keeps itself fresh again
+
+[Full version history →](https://github.com/axium-wealth/nexus-tv-bridge/blob/main/CHANGELOG.md)
+
+---
+
+## Assets — what clicking each one actually does
+
+**`0-COPY-THIS-pine-script-for-tradingview.pine`** — the indicator that draws the columns.
+**You normally never need this file** — the extension installs and updates this script for you on your first sync. It's here as the fallback for when that can't run, and as the readable copy of what's on your chart. Clicking **downloads a text file and installs nothing**; to paste it in by hand, the "Open the script" link above is easier.
+
+**`1-FIREFOX-SETUP-…​.xpi`** — the Firefox add-on. Same file as the Install button above; clicking it in Firefox installs it. In Chrome it just downloads something useless.
+
+**`2-CHROME-SETUP-…​.zip`** — the Chrome extension as a file, for anyone who can't use the Web Store.
+Clicking **downloads a zip and installs nothing.** Chrome can't install an extension from a file. Unzip it → `chrome://extensions` → turn on **Developer mode** (top right) → **Load unpacked** → select the unzipped **`nexus-tradingview-bridge` folder** (the one with `manifest.json` directly inside — Chrome loads the folder, not the zip). Installed this way it will **not** auto-update.
+
+**`3.0-GUIDE-chrome.txt` · `3.1-GUIDE-firefox.txt` · `3.2-GUIDE-pine.md`** — reading, not installing. The long-form walkthroughs if the steps above aren't enough. Readable in your browser: [Chrome](https://github.com/axium-wealth/nexus-tv-bridge/blob/main/GUIDE-chrome-install.txt) · [Firefox](https://github.com/axium-wealth/nexus-tv-bridge/blob/main/GUIDE-firefox-install.txt) · [Pine](https://github.com/axium-wealth/nexus-tv-bridge/blob/main/GUIDE-pine-indicator-setup.md)
+
+*Ignore "Source code (zip/tar.gz)" — GitHub generates those automatically and they aren't the extension.*
+
+---
+
+> **On version currency:** Firefox and the zip above are always this build. **Chrome's Web Store copy can be up to ~24 hours behind** — Google reviews every submission and locks the listing while one is pending, so Store releases land in batches. If you need today's code on Chrome right now, use the `2-CHROME-SETUP` zip and the manual steps above instead of the Store link.
+
 ## v6.17.4.13 — 2026-10-15
 
 **The sync tooltip now says when the strike columns are held before the open, instead of calling it a failure.**
