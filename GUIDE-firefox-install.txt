@@ -1,13 +1,13 @@
 Nexus → TradingView Bridge — FIREFOX
 ====================================
-Version 6.17.3.13 — signed by Mozilla, installs permanently, updates itself.
+Version 6.17.4.13 — signed by Mozilla, installs permanently, updates itself.
 
 
 INSTALL — two clicks
 --------------------
 1. Open this link IN FIREFOX (not Chrome — Chrome can't use this file):
 
-     https://github.com/ahoward001/nexus-tv-bridge/releases/latest
+     https://github.com/axium-wealth/nexus-tv-bridge/releases/latest
 
 2. Scroll to "Assets" at the bottom and click the blue
 
